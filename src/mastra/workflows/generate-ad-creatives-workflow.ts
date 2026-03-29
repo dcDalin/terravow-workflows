@@ -65,7 +65,17 @@ const generateAdCreativesWorkflow = createWorkflow({
   .map(async ({ inputData }) => {
     const { originalInput, logo, productImages, customizedPrompts } = inputData;
 
-    console.log(`🎨 Preparing ${customizedPrompts.length} image(s) for parallel generation...`);
+    console.log(`🎨 Preparing ${customizedPrompts.length} image(s) for parallel generation and saving...`);
+
+    // Determine output directory
+    const sanitizedTitle = originalInput.productTitle
+      .replace(/[^a-zA-Z0-9-_]/g, "-")
+      .toLowerCase();
+    const outputDirectory =
+      originalInput.outputDirectory ||
+      `./output/${sanitizedTitle}/${Date.now()}`;
+
+    console.log(`📁 Output directory: ${outputDirectory}`);
 
     // Prepare reference images (logo + product images)
     const referenceImages = [logo, ...productImages].map(img => ({
@@ -76,7 +86,7 @@ const generateAdCreativesWorkflow = createWorkflow({
     // Determine image size from model setting
     const imageSize = originalInput.imageGenerationModel?.includes('4K') ? '4K' : '2K';
 
-    // Return array of enriched items (each self-contained for generation)
+    // Return array of enriched items (each self-contained for generation and saving)
     return customizedPrompts.map(prompt => ({
       templateId: prompt.templateId,
       templateName: prompt.templateName,
@@ -85,6 +95,7 @@ const generateAdCreativesWorkflow = createWorkflow({
       aspectRatio: prompt.aspectRatio,
       productTitle: originalInput.productTitle,
       imageSize: imageSize as any,
+      outputDirectory,
       referenceImages,
     }));
   })

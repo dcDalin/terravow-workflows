@@ -1,16 +1,19 @@
 import { createStep } from "@mastra/core/workflows";
 import { z } from "zod";
+import { writeFile, mkdir } from "fs/promises";
+import { join } from "path";
 import { creativeOutputSchema } from "../../schemas/ad-creatives-types";
 import { generateImageGeminiTool } from "../../tools/generate-image-gemini";
 
 /**
- * Step: Generate a single image
+ * Step: Generate and save a single image
  * This step is designed to be used with .foreach() for parallel generation
- * Each input item must contain all data needed to generate one image
+ * Each input item must contain all data needed to generate and save one image
+ * Files are saved immediately after generation to reduce memory usage
  */
 export const generateSingleImageStep = createStep({
   id: "generate-single-image",
-  description: "Generate a single ad creative image using Gemini",
+  description: "Generate and save a single ad creative image using Gemini",
   inputSchema: z.object({
     templateId: z.number(),
     templateName: z.string(),
@@ -19,6 +22,7 @@ export const generateSingleImageStep = createStep({
     aspectRatio: z.string(),
     productTitle: z.string(),
     imageSize: z.enum(["512", "1K", "2K", "4K"]),
+    outputDirectory: z.string(),
     referenceImages: z.array(
       z.object({
         data: z.string(),
@@ -36,6 +40,7 @@ export const generateSingleImageStep = createStep({
       aspectRatio,
       productTitle,
       imageSize,
+      outputDirectory,
       referenceImages,
     } = inputData;
 
@@ -44,6 +49,7 @@ export const generateSingleImageStep = createStep({
     );
 
     try {
+      // Generate the image
       const result = await generateImageGeminiTool.execute!(
         {
           prompt,
@@ -60,16 +66,34 @@ export const generateSingleImageStep = createStep({
       }
 
       const timestamp = new Date().toISOString();
-      const sanitizedTitle = productTitle
-        .replace(/[^a-zA-Z0-9-_]/g, "-")
-        .toLowerCase();
 
+      // Extract file extension from mime type or default to png
+      let fileExtension = "png";
+      const mimeMatch = result.imageData.match(/^data:image\/(\w+);base64,/);
+      if (mimeMatch) {
+        fileExtension = mimeMatch[1];
+      }
+
+      // Generate filename and path
+      const fileName = `${templateName.replace(/[^a-zA-Z0-9-_]/g, "-")}-v${variationNumber}.${fileExtension}`;
+      const filePath = join(outputDirectory, fileName);
+
+      // Ensure output directory exists
+      await mkdir(outputDirectory, { recursive: true });
+
+      // Save the image immediately
+      const base64Data = result.imageData.replace(/^data:image\/\w+;base64,/, "");
+      const buffer = Buffer.from(base64Data, "base64");
+      await writeFile(filePath, buffer);
+
+      console.log(`  ✓ Saved: ${fileName}`);
+
+      // Return creative without imageData to save memory
       return {
         templateId,
         templateName,
         variationNumber,
-        imageData: result.imageData,
-        localPath: `./output/${sanitizedTitle}/${templateName}-${variationNumber}.png`,
+        localPath: filePath,
         prompt,
         aspectRatio,
         generatedAt: timestamp,
@@ -82,7 +106,7 @@ export const generateSingleImageStep = createStep({
       };
     } catch (error) {
       console.error(
-        `❌ Failed to generate image for template ${templateId}:`,
+        `❌ Failed to generate/save image for template ${templateId}:`,
         error instanceof Error ? error.message : error
       );
       throw error;

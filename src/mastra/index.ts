@@ -10,6 +10,8 @@ import { productAnalyzerAgent } from './agents/product-analyzer-agent';
 import { toolCallAppropriatenessScorer, completenessScorer, translationScorer } from './scorers/weather-scorer';
 import { processImageInputTool } from './tools/process-image-input';
 import { generateImageGeminiTool } from './tools/generate-image-gemini';
+import { writeFileTool } from './tools/write-file';
+import { ensureDirectoryTool } from './tools/ensure-directory';
 
 export const mastra = new Mastra({
   workflows: { weatherWorkflow, generateAdCreativesWorkflow },
@@ -17,6 +19,8 @@ export const mastra = new Mastra({
   tools: {
     processImageInputTool,
     generateImageGeminiTool,
+    writeFileTool,
+    ensureDirectoryTool,
   },
   scorers: { toolCallAppropriatenessScorer, completenessScorer, translationScorer },
   storage: new LibSQLStore({

@@ -1,5 +1,7 @@
 import { createStep } from "@mastra/core/workflows";
 import { z } from "zod";
+import { writeFile } from "fs/promises";
+import { join, dirname } from "path";
 import {
   generateAdCreativesInputSchema,
   creativeOutputSchema,
@@ -7,19 +9,19 @@ import {
 } from "../../schemas/ad-creatives-types";
 
 /**
- * Step 6: Save creatives and generate manifest (SIMPLIFIED)
- * TODO: Implement actual file saving when ready
+ * Step 6: Generate manifest for saved creatives
+ * Files are already saved during generation, this step just creates the manifest
  */
 export const saveCreativesStep = createStep({
   id: "save-creatives",
-  description: "Save creatives and generate manifest (simplified)",
+  description: "Generate manifest for saved creatives",
   inputSchema: z.object({
     originalInput: generateAdCreativesInputSchema,
     creatives: z.array(creativeOutputSchema),
   }),
   outputSchema: workflowOutputSchema,
   execute: async ({ inputData }) => {
-    console.log("💾 Saving creatives (simplified)...");
+    console.log("📋 Generating manifest...");
 
     const { originalInput, creatives } = inputData;
 
@@ -34,28 +36,40 @@ export const saveCreativesStep = createStep({
       };
     }
 
-    // Determine output directory
-    const sanitizedTitle = originalInput.productTitle
-      .replace(/[^a-zA-Z0-9-_]/g, "-")
-      .toLowerCase();
-    const outputDir =
-      originalInput.outputDirectory ||
-      `./output/${sanitizedTitle}/${Date.now()}`;
-    const manifestPath = `${outputDir}/manifest.json`;
+    // Get output directory from first creative's path
+    const outputDir = dirname(creatives[0].localPath);
 
-    // PLACEHOLDER: Just return success without actual file I/O
-    // In the future, this will:
-    // 1. Create output directories
-    // 2. Save image files (base64 → PNG/WEBP)
-    // 3. Create manifest.json with metadata
-    // 4. Organize by template categories
+    // Generate manifest
+    const manifestPath = join(outputDir, "manifest.json");
+    const manifest = {
+      generatedAt: new Date().toISOString(),
+      productTitle: originalInput.productTitle,
+      productDescription: originalInput.productDescription,
+      totalCreatives: creatives.length,
+      templates: Array.from(new Set(creatives.map((c) => c.templateId))),
+      creatives: creatives.map((c) => ({
+        templateId: c.templateId,
+        templateName: c.templateName,
+        variationNumber: c.variationNumber,
+        fileName: c.localPath.split('/').pop(),
+        filePath: c.localPath,
+        aspectRatio: c.aspectRatio,
+        prompt: c.prompt,
+        generatedAt: c.generatedAt,
+        generationTime: c.generationTime,
+        metadata: c.metadata,
+      })),
+      input: originalInput,
+    };
 
-    console.log(`✅ [PLACEHOLDER] Would save ${creatives.length} creatives to ${outputDir}`);
-    console.log("   Note: File saving not implemented yet.");
+    await writeFile(manifestPath, JSON.stringify(manifest, null, 2));
+    console.log(`📋 Created manifest: ${manifestPath}`);
 
     // Generate summary
     const templateCount = new Set(creatives.map((c) => c.templateId)).size;
-    const summary = `Successfully prepared ${creatives.length} ad creatives for "${originalInput.productTitle}" across ${templateCount} templates. Files would be saved to: ${outputDir}`;
+    const summary = `Successfully generated ${creatives.length} ad creatives for "${originalInput.productTitle}" across ${templateCount} templates. Files saved to: ${outputDir}`;
+
+    console.log(`✅ ${summary}`);
 
     return {
       success: true,

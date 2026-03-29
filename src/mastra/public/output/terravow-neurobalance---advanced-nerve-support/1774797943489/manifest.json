@@ -1,0 +1,106 @@
+{
+  "generatedAt": "2026-03-29T15:27:49.861Z",
+  "productTitle": "TerraVow NeuroBalance — Advanced Nerve Support",
+  "productDescription": "Restore Comfort. Regain Control  Advanced nerve support for long-term relief.  Support Your Nerves at the Root  Nerve discomfort isn’t something to ignore. Tingling, sensitivity, and ongoing discomfort can affect how you move, rest, and feel day to day.  TerraVow NeuroBalance is designed to support your body at the root, helping restore comfort and improve nerve function over time.  Why You’ll Feel the Difference Reduced tingling and everyday discomfort Improved nerve function and responsiveness Better sleep and overall daily comfort Long-term support for nerve health Targeted Ingredients That Matter  Alpha Lipoic Acid Supports nerve repair and helps protect against oxidative stress.  Benfotiamine A highly bioavailable form of vitamin B1 that helps protect nerve health.  B Vitamins Support nerve regeneration and overall nervous system function.  Acetyl L-Carnitine Supports nerve recovery and cellular energy production.  Built for Long-Term Support  This formula is designed to work consistently over time, supporting the systems responsible for nerve health, comfort, and recovery.  How to Use  Take 2 capsules daily.  Use consistently for best results and ongoing nerve support.",
+  "totalCreatives": 5,
+  "templates": [
+    4,
+    5,
+    6,
+    14,
+    17
+  ],
+  "creatives": [
+    {
+      "templateId": 4,
+      "templateName": "Features/Benefits Point-Out",
+      "variationNumber": 1,
+      "fileName": "Features-Benefits-Point-Out-v1.png",
+      "filePath": "output/terravow-neurobalance---advanced-nerve-support/1774797943489/Features-Benefits-Point-Out-v1.png",
+      "aspectRatio": "4:5",
+      "prompt": "\n        Use the attached images as brand reference.\n        Create: an educational diagram-style ad on white background.\n        Top: bold [BRAND COLOR] text \"[HEADER like What Makes TerraVow NeuroBalance — Advanced Nerve Support Different]\".\n        Below: TerraVow NeuroBalance — Advanced Nerve Support centered, even studio lighting.\n        Four callout boxes with connecting lines: \"[BENEFIT 1-4]\".\n        Each has a small [BRAND COLOR] circle.\n        \"[WEBSITE]\" bottom center.\n        TerraVow NeuroBalance — Advanced Nerve Support logo bottom right.\n        Scientific diagram redesigned by a luxury agency.\n        4:5 aspect ratio.\n      ",
+      "generatedAt": "2026-03-29T15:26:30.639Z",
+      "generationTime": 43974,
+      "metadata": {
+        "productTitle": "TerraVow NeuroBalance — Advanced Nerve Support",
+        "modelUsed": "gemini-3.1-flash-image-preview",
+        "templateCategory": "generated"
+      }
+    },
+    {
+      "templateId": 5,
+      "templateName": "Bullet-Points",
+      "variationNumber": 1,
+      "fileName": "Bullet-Points-v1.png",
+      "filePath": "output/terravow-neurobalance---advanced-nerve-support/1774797943489/Bullet-Points-v1.png",
+      "aspectRatio": "4:5",
+      "prompt": "\n        Use the attached images as brand reference.\n        Create: a benefit-list ad, split composition on [BACKGROUND] background.\n        Left 40%: TerraVow NeuroBalance — Advanced Nerve Support on [SURFACE], shot at 85mm f/2.8.\n        Right 60%: vertical stack of five lines with filled [BRAND COLOR] circles: \"[BENEFIT 1-5]\".\n        Clean sans-serif, generous spacing.\n        TerraVow NeuroBalance — Advanced Nerve Support logo bottom right.\n        4:5 aspect ratio.\n      ",
+      "generatedAt": "2026-03-29T15:26:50.110Z",
+      "generationTime": 63446,
+      "metadata": {
+        "productTitle": "TerraVow NeuroBalance — Advanced Nerve Support",
+        "modelUsed": "gemini-3.1-flash-image-preview",
+        "templateCategory": "generated"
+      }
+    },
+    {
+      "templateId": 6,
+      "templateName": "Social Proof",
+      "variationNumber": 1,
+      "fileName": "Social-Proof-v1.png",
+      "filePath": "output/terravow-neurobalance---advanced-nerve-support/1774797943489/Social-Proof-v1.png",
+      "aspectRatio": "4:5",
+      "prompt": "\n        Use the attached images as brand reference.\n        Create: a social proof ad on [BACKGROUND like warm cream].\n        Top: \"[HEADLINE like Join 1,000,000+ Members]\" in bold [BRAND COLOR].\n        Five filled stars with \"Rated [X] out of 5\".\n        Center: TerraVow NeuroBalance — Advanced Nerve Support at 50mm f/4.\n        Below: frosted white card with five-star rating, \"[REVIEW TITLE]\", \"[2-3 SENTENCE REVIEW]\", \"[ATTRIBUTION]\" in italic.\n        Below card: \"As Featured In\" with five grayscale logos.\n        TerraVow NeuroBalance — Advanced Nerve Support logo bottom right.\n        4:5 aspect ratio.\n      ",
+      "generatedAt": "2026-03-29T15:26:46.991Z",
+      "generationTime": 60326,
+      "metadata": {
+        "productTitle": "TerraVow NeuroBalance — Advanced Nerve Support",
+        "modelUsed": "gemini-3.1-flash-image-preview",
+        "templateCategory": "generated"
+      }
+    },
+    {
+      "templateId": 14,
+      "templateName": "Bundle Showcase + Benefit Bar",
+      "variationNumber": 1,
+      "fileName": "Bundle-Showcase---Benefit-Bar-v1.png",
+      "filePath": "output/terravow-neurobalance---advanced-nerve-support/1774797943489/Bundle-Showcase---Benefit-Bar-v1.png",
+      "aspectRatio": "1:1",
+      "prompt": "\n        Use the attached images as brand reference. Match the exact product design, colors, and typography style precisely.\n        Create: a static ad on a [BACKGROUND like soft pink-to-hot-pink gradient] background.\n        Top: oversized bold white all-caps sans-serif headline reading \"[HEADLINE like 24/7 PEAK FEMALE PERFORMANCE]\".\n        Below headline: a horizontal [ACCENT COLOR like purple/violet] banner bar divided into [NUMBER like five] equal segments separated by thin vertical lines, each containing a two-word benefit label in white text: \"[BENEFIT 1 like Morning Energy]\", \"[BENEFIT 2 like Focus Amplifier]\", \"[BENEFIT 3 like Deep Sleep]\", \"[BENEFIT 4 like Ultimate Beauty]\", \"[BENEFIT 5 like Metabolism Booster]\".\n        Center-to-bottom: an open [PACKAGING like branded gift box] photographed at a slight overhead angle showing [NUMBER like three] [PRODUCTS like supplement jars] nestled inside, each a different [COLOR-CODED VARIANT].\n        In the lower foreground: a [LIFESTYLE PROP like woman's hand holding a pastel dumbbell] entering the frame from bottom.\n        TerraVow NeuroBalance — Advanced Nerve Support logo bottom left corner.\n        Bright studio lighting, saturated color, energetic and empowering.\n        1:1 aspect ratio.\n      ",
+      "generatedAt": "2026-03-29T15:27:33.233Z",
+      "generationTime": 41742,
+      "metadata": {
+        "productTitle": "TerraVow NeuroBalance — Advanced Nerve Support",
+        "modelUsed": "gemini-3.1-flash-image-preview",
+        "templateCategory": "generated"
+      }
+    },
+    {
+      "templateId": 17,
+      "templateName": "Verified Review Card",
+      "variationNumber": 1,
+      "fileName": "Verified-Review-Card-v1.png",
+      "filePath": "output/terravow-neurobalance---advanced-nerve-support/1774797943489/Verified-Review-Card-v1.png",
+      "aspectRatio": "1:1",
+      "prompt": "\n        Use the attached images as brand reference. Match the exact product design, colors, and typography style precisely.\n        Create: a static ad on a solid [BRAND COLOR like periwinkle/lavender blue] background.\n        Top: large bold white serif or semi-bold sans-serif pull-quote reading \"[HEADLINE QUOTE like \"I finally found something that works!\"]\" in quotation marks.\n        Below the quote: five filled gold stars, large.\n        Center-left: a white rounded-rectangle review card with subtle shadow containing: gray circular avatar icon, bold name \"[REVIEWER NAME like Dawn K.]\" with [FLAG EMOJI like 🇺🇸], blue checkmark and \"[VERIFIED BADGE TEXT like Verified Reviewer]\" in [BRAND COLOR] text, then 3-4 sentences of review body text in regular weight dark text.\n        At the bottom of the card: a blue \"[READ MORE like ...Read more]\" link and \"[HELPFULNESS like Was this review helpful? 👍 150]\".\n        Right side, overlapping the card edge: [YOUR PRODUCT like cream jar with lid] photographed at a slight angle, soft studio lighting, casting a gentle shadow on the background.\n        No brand logo.\n        The review UI is the trust mechanic.\n        1:1 aspect ratio.\n      ",
+      "generatedAt": "2026-03-29T15:27:46.456Z",
+      "generationTime": 54964,
+      "metadata": {
+        "productTitle": "TerraVow NeuroBalance — Advanced Nerve Support",
+        "modelUsed": "gemini-3.1-flash-image-preview",
+        "templateCategory": "generated"
+      }
+    }
+  ],
+  "input": {
+    "productTitle": "TerraVow NeuroBalance — Advanced Nerve Support",
+    "productDescription": "Restore Comfort. Regain Control  Advanced nerve support for long-term relief.  Support Your Nerves at the Root  Nerve discomfort isn’t something to ignore. Tingling, sensitivity, and ongoing discomfort can affect how you move, rest, and feel day to day.  TerraVow NeuroBalance is designed to support your body at the root, helping restore comfort and improve nerve function over time.  Why You’ll Feel the Difference Reduced tingling and everyday discomfort Improved nerve function and responsiveness Better sleep and overall daily comfort Long-term support for nerve health Targeted Ingredients That Matter  Alpha Lipoic Acid Supports nerve repair and helps protect against oxidative stress.  Benfotiamine A highly bioavailable form of vitamin B1 that helps protect nerve health.  B Vitamins Support nerve regeneration and overall nervous system function.  Acetyl L-Carnitine Supports nerve recovery and cellular energy production.  Built for Long-Term Support  This formula is designed to work consistently over time, supporting the systems responsible for nerve health, comfort, and recovery.  How to Use  Take 2 capsules daily.  Use consistently for best results and ongoing nerve support.",
+    "logo": "https://khhcqyneccljsmzulvtz.supabase.co/storage/v1/object/public/TerraVow/Terravow-logo.webp",
+    "productImages": [
+      "https://khhcqyneccljsmzulvtz.supabase.co/storage/v1/object/public/TerraVow/TerraVow%20NeuroBalance/TerraVow%20NeuroBalance.jpg"
+    ],
+    "templateSelectionMode": "ai",
+    "aiSelectTemplateCount": 5,
+    "creativesPerTemplate": 1
+  }
+}
