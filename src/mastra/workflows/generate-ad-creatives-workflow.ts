@@ -7,7 +7,8 @@ import { processAssetsStep } from "./steps/process-assets-step";
 import { analyzeProductStep } from "./steps/analyze-product-step";
 import { prepareGenerationTasksStep } from "./steps/prepare-generation-tasks-step";
 import { customizePromptsStep } from "./steps/customize-prompts-step";
-import { generateImagesStep } from "./steps/generate-images-step";
+import { verifyGeminiKeyStep } from "./steps/verify-gemini-key-step";
+import { generateSingleImageStep } from "./steps/generate-single-image-step";
 import { saveCreativesStep } from "./steps/save-creatives-step";
 
 const generateAdCreativesWorkflow = createWorkflow({
@@ -44,8 +45,9 @@ const generateAdCreativesWorkflow = createWorkflow({
     2. Analyze Product - AI analyzes product and recommends templates
     3. Prepare Tasks - Select templates and create generation task list
     4. Customize Prompts - Replace placeholders with product details
-    5. Generate Images - Create ad creatives (placeholder for now)
-    6. Save Creatives - Save results and generate manifest (placeholder for now)
+    5. Verify Gemini Key - Check API key is valid before generation
+    6. Generate Images - Create ad creatives using Gemini (parallel with concurrency)
+    7. Save Creatives - Save results and generate manifest
   `,
   inputSchema: generateAdCreativesInputSchema,
   outputSchema: workflowOutputSchema,
@@ -58,7 +60,51 @@ const generateAdCreativesWorkflow = createWorkflow({
   .then(analyzeProductStep)
   .then(prepareGenerationTasksStep)
   .then(customizePromptsStep)
-  .then(generateImagesStep)
+  .then(verifyGeminiKeyStep)
+  // Map: Prepare data for parallel generation
+  .map(async ({ inputData }) => {
+    const { originalInput, logo, productImages, customizedPrompts } = inputData;
+
+    console.log(`🎨 Preparing ${customizedPrompts.length} image(s) for parallel generation...`);
+
+    // Prepare reference images (logo + product images)
+    const referenceImages = [logo, ...productImages].map(img => ({
+      data: img.data,
+      mimeType: img.mimeType,
+    }));
+
+    // Determine image size from model setting
+    const imageSize = originalInput.imageGenerationModel?.includes('4K') ? '4K' : '2K';
+
+    // Return array of enriched items (each self-contained for generation)
+    return customizedPrompts.map(prompt => ({
+      templateId: prompt.templateId,
+      templateName: prompt.templateName,
+      variationNumber: prompt.variationNumber,
+      prompt: prompt.prompt,
+      aspectRatio: prompt.aspectRatio,
+      productTitle: originalInput.productTitle,
+      imageSize: imageSize as any,
+      referenceImages,
+    }));
+  })
+  // ForEach: Generate images in parallel (concurrency: 3)
+  .foreach(generateSingleImageStep, { concurrency: 3 })
+  // Map: Package results with originalInput
+  .map(async ({ inputData, getStepResult }) => {
+    // inputData is array of creatives from .foreach()
+    const creatives = inputData;
+
+    // Get originalInput from the verification step
+    const verifyStepOutput = getStepResult(verifyGeminiKeyStep);
+
+    console.log(`✅ Generated ${creatives.length} creative(s) successfully`);
+
+    return {
+      originalInput: verifyStepOutput.originalInput,
+      creatives,
+    };
+  })
   .then(saveCreativesStep);
 
 generateAdCreativesWorkflow.commit();

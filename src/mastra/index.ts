@@ -9,11 +9,15 @@ import { weatherAgent } from './agents/weather-agent';
 import { productAnalyzerAgent } from './agents/product-analyzer-agent';
 import { toolCallAppropriatenessScorer, completenessScorer, translationScorer } from './scorers/weather-scorer';
 import { processImageInputTool } from './tools/process-image-input';
+import { generateImageGeminiTool } from './tools/generate-image-gemini';
 
 export const mastra = new Mastra({
   workflows: { weatherWorkflow, generateAdCreativesWorkflow },
   agents: { weatherAgent, productAnalyzerAgent },
-  tools: { processImageInputTool },
+  tools: {
+    processImageInputTool,
+    generateImageGeminiTool,
+  },
   scorers: { toolCallAppropriatenessScorer, completenessScorer, translationScorer },
   storage: new LibSQLStore({
     id: "mastra-storage",
