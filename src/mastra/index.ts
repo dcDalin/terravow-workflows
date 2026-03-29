@@ -4,12 +4,16 @@ import { PinoLogger } from '@mastra/loggers';
 import { LibSQLStore } from '@mastra/libsql';
 import { Observability, DefaultExporter, CloudExporter, SensitiveDataFilter } from '@mastra/observability';
 import { weatherWorkflow } from './workflows/weather-workflow';
+import { generateAdCreativesWorkflow } from './workflows/generate-ad-creatives-workflow';
 import { weatherAgent } from './agents/weather-agent';
+import { productAnalyzerAgent } from './agents/product-analyzer-agent';
 import { toolCallAppropriatenessScorer, completenessScorer, translationScorer } from './scorers/weather-scorer';
+import { processImageInputTool } from './tools/process-image-input';
 
 export const mastra = new Mastra({
-  workflows: { weatherWorkflow },
-  agents: { weatherAgent },
+  workflows: { weatherWorkflow, generateAdCreativesWorkflow },
+  agents: { weatherAgent, productAnalyzerAgent },
+  tools: { processImageInputTool },
   scorers: { toolCallAppropriatenessScorer, completenessScorer, translationScorer },
   storage: new LibSQLStore({
     id: "mastra-storage",
