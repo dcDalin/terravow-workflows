@@ -1,9 +1,8 @@
 import { createStep } from "@mastra/core/workflows";
 import { z } from "zod";
-import { writeFile, mkdir } from "fs/promises";
-import { join } from "path";
 import { creativeOutputSchema } from "../../schemas/ad-creatives-types";
 import { generateImageGeminiTool } from "../../tools/generate-image-gemini";
+import { uploadToSupabaseTool } from "../../tools/upload-to-supabase";
 
 /**
  * Step: Generate and save a single image
@@ -69,31 +68,49 @@ export const generateSingleImageStep = createStep({
 
       // Extract file extension from mime type or default to png
       let fileExtension = "png";
+      let contentType = "image/png";
       const mimeMatch = result.imageData.match(/^data:image\/(\w+);base64,/);
       if (mimeMatch) {
         fileExtension = mimeMatch[1];
+        contentType = `image/${fileExtension}`;
       }
 
-      // Generate filename and path
+      // Generate filename and Supabase storage path
       const fileName = `${templateName.replace(/[^a-zA-Z0-9-_]/g, "-")}-v${variationNumber}.${fileExtension}`;
-      const filePath = join(outputDirectory, fileName);
+      // Extract the folder name from outputDirectory (e.g., "product-name/timestamp")
+      const folderPath = outputDirectory.split('/').slice(-2).join('/');
+      const storagePath = `${folderPath}/${fileName}`;
 
-      // Ensure output directory exists
-      await mkdir(outputDirectory, { recursive: true });
+      // Upload to Supabase Storage
+      const uploadResult = await uploadToSupabaseTool.execute!(
+        {
+          filePath: storagePath,
+          content: result.imageData,
+          contentType,
+          isBase64: true,
+        },
+        { requestContext, mastra }
+      );
 
-      // Save the image immediately
-      const base64Data = result.imageData.replace(/^data:image\/\w+;base64,/, "");
-      const buffer = Buffer.from(base64Data, "base64");
-      await writeFile(filePath, buffer);
+      // Type guard for upload result
+      if (!uploadResult || !("success" in uploadResult)) {
+        throw new Error("Invalid result from upload tool");
+      }
 
-      console.log(`  ✓ Saved: ${fileName}`);
+      if (!uploadResult.success || !uploadResult.publicUrl) {
+        throw new Error(
+          `Failed to upload to Supabase: ${uploadResult.error || "Unknown error"}`
+        );
+      }
 
-      // Return creative without imageData to save memory
+      console.log(`  ✓ Uploaded: ${fileName} -> ${uploadResult.publicUrl}`);
+
+      // Return creative with Supabase URL
       return {
         templateId,
         templateName,
         variationNumber,
-        localPath: filePath,
+        localPath: uploadResult.publicUrl, // Use publicUrl as localPath for backwards compatibility
         prompt,
         aspectRatio,
         generatedAt: timestamp,
@@ -106,7 +123,7 @@ export const generateSingleImageStep = createStep({
       };
     } catch (error) {
       console.error(
-        `❌ Failed to generate/save image for template ${templateId}:`,
+        `❌ Failed to generate/upload image for template ${templateId}:`,
         error instanceof Error ? error.message : error
       );
       throw error;

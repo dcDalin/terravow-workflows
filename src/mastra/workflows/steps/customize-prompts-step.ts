@@ -68,19 +68,51 @@ export const customizePromptsStep = createStep({
       let customizedPrompt = templateInfo.prompt.promptText;
 
       // Replace placeholders with actual product details
+      const productName = originalInput.productTitle;
+      const headline = analysis.keyMessages[0] || productName;
+      const subheadline = analysis.keyMessages[1] || "Transform your experience";
+      const feature1 = analysis.keyFeatures[0] || "Premium quality";
+      const feature2 = analysis.keyFeatures[1] || "Proven results";
+      const feature3 = analysis.keyFeatures[2] || "Customer satisfaction";
+
       const replacements: Record<string, string> = {
-        "[YOUR PRODUCT]": originalInput.productTitle,
-        "[PRODUCT]": originalInput.productTitle,
-        "[BRAND]": originalInput.productTitle,
-        "[YOUR BRAND]": originalInput.productTitle,
-        "[YOUR HEADLINE, under 10 words]":
-          analysis.keyMessages[0] || originalInput.productTitle,
-        "[SHORT HEADLINE]":
-          analysis.keyMessages[0] || originalInput.productTitle,
+        // Product references
+        "[YOUR PRODUCT]": productName,
+        "[PRODUCT]": productName,
+        "[BRAND]": productName,
+        "[YOUR BRAND]": productName,
+
+        // Headlines
+        "[YOUR HEADLINE, under 10 words]": headline,
+        "[SHORT HEADLINE]": headline,
+        "[YOUR HEADLINE]": headline,
+        "[SHORT QUOTE]": headline,
+        "[HEADLINE]": headline,
+
+        // Subheadlines and descriptions
+        "[YOUR SUBHEAD, one sentence]": subheadline,
+        "[SUBHEADLINE]": subheadline,
+
+        // Offers and promotions
         "[YOUR OFFER like YOUR FIRST MONTH FREE]": "LIMITED TIME OFFER",
-        "[OFFER DETAILS]": analysis.keyMessages[1] || "Special offer available now",
-        "[YOUR HEADLINE]": analysis.keyMessages[0] || originalInput.productTitle,
-        "[SHORT QUOTE]": analysis.keyMessages[0] || originalInput.productTitle,
+        "[OFFER DETAILS]": subheadline,
+
+        // Benefits/Features (use key features from analysis)
+        "[BENEFIT 1]": feature1,
+        "[BENEFIT 2]": feature2,
+        "[BENEFIT 3]": feature3,
+        "[BENEFIT 1-3]": `${feature1}, ${feature2}, ${feature3}`,
+        "[BENEFIT 1-4]": `${feature1}, ${feature2}, ${feature3}`,
+        "[BENEFIT 1-5]": `${feature1}, ${feature2}, ${feature3}`,
+
+        // Website (use generic for now - AI should infer from context)
+        "[WEBSITE]": "www.example.com",
+
+        // Remove common instruction placeholders that AI should interpret
+        "[DETAILS]": "",
+        "[BACKGROUND]": "",
+        "[SURFACE]": "",
+        "[SETTING]": "",
       };
 
       // Apply replacements
@@ -90,6 +122,15 @@ export const customizePromptsStep = createStep({
           value,
         );
       }
+
+      // Add critical instructions about square brackets
+      customizedPrompt += `\n\n⚠️ CRITICAL INSTRUCTIONS:
+• All text in [SQUARE BRACKETS] are INSTRUCTIONS for what to create - DO NOT render them literally in the image
+• Replace bracketed placeholders with appropriate actual content based on the product information and reference images
+• Example: [VERIFIED BADGE TEXT] means "create verified badge text like 'Verified Reviewer'" - NOT literally "[VERIFIED BADGE TEXT]"
+• Example: [WEBSITE] means "show a website URL" - NOT literally "[WEBSITE]"
+• Example: [- Sarah J., Verified Buyer] means "create a customer name and attribution" - NOT literally "[- Sarah J., Verified Buyer]"
+• Make all text in the image look professional and realistic - NO square brackets should appear in the final image`;
 
       // Add variation modifier for non-first variations
       if (task.variationNumber > 1) {

@@ -1,12 +1,11 @@
 import { createStep } from "@mastra/core/workflows";
 import { z } from "zod";
-import { writeFile } from "fs/promises";
-import { join, dirname } from "path";
 import {
   generateAdCreativesInputSchema,
   creativeOutputSchema,
   workflowOutputSchema,
 } from "../../schemas/ad-creatives-types";
+import { uploadToSupabaseTool } from "../../tools/upload-to-supabase";
 
 /**
  * Step 6: Generate manifest for saved creatives
@@ -20,7 +19,7 @@ export const saveCreativesStep = createStep({
     creatives: z.array(creativeOutputSchema),
   }),
   outputSchema: workflowOutputSchema,
-  execute: async ({ inputData }) => {
+  execute: async ({ inputData, requestContext, mastra }) => {
     console.log("📋 Generating manifest...");
 
     const { originalInput, creatives } = inputData;
@@ -36,11 +35,14 @@ export const saveCreativesStep = createStep({
       };
     }
 
-    // Get output directory from first creative's path
-    const outputDir = dirname(creatives[0].localPath);
+    // Extract folder path from first creative's URL
+    // URL format: https://.../storage/v1/object/public/TerraVow/product-name/timestamp/file.png
+    const firstCreativeUrl = creatives[0].localPath;
+    const urlParts = firstCreativeUrl.split('/TerraVow/');
+    const folderPath = urlParts.length > 1 ? urlParts[1].split('/').slice(0, -1).join('/') : '';
 
     // Generate manifest
-    const manifestPath = join(outputDir, "manifest.json");
+    const manifestStoragePath = `${folderPath}/manifest.json`;
     const manifest = {
       generatedAt: new Date().toISOString(),
       productTitle: originalInput.productTitle,
@@ -52,7 +54,7 @@ export const saveCreativesStep = createStep({
         templateName: c.templateName,
         variationNumber: c.variationNumber,
         fileName: c.localPath.split('/').pop(),
-        filePath: c.localPath,
+        fileUrl: c.localPath, // Now a Supabase URL
         aspectRatio: c.aspectRatio,
         prompt: c.prompt,
         generatedAt: c.generatedAt,
@@ -62,12 +64,33 @@ export const saveCreativesStep = createStep({
       input: originalInput,
     };
 
-    await writeFile(manifestPath, JSON.stringify(manifest, null, 2));
-    console.log(`📋 Created manifest: ${manifestPath}`);
+    // Upload manifest to Supabase
+    const uploadResult = await uploadToSupabaseTool.execute!(
+      {
+        filePath: manifestStoragePath,
+        content: JSON.stringify(manifest, null, 2),
+        contentType: "application/json",
+        isBase64: false,
+      },
+      { requestContext, mastra }
+    );
+
+    // Type guard for upload result
+    if (!uploadResult || !("success" in uploadResult)) {
+      throw new Error("Invalid result from upload tool");
+    }
+
+    if (!uploadResult.success || !uploadResult.publicUrl) {
+      throw new Error(
+        `Failed to upload manifest: ${uploadResult.error || "Unknown error"}`
+      );
+    }
+
+    console.log(`📋 Uploaded manifest: ${uploadResult.publicUrl}`);
 
     // Generate summary
     const templateCount = new Set(creatives.map((c) => c.templateId)).size;
-    const summary = `Successfully generated ${creatives.length} ad creatives for "${originalInput.productTitle}" across ${templateCount} templates. Files saved to: ${outputDir}`;
+    const summary = `Successfully generated ${creatives.length} ad creatives for "${originalInput.productTitle}" across ${templateCount} templates. Files saved to Supabase Storage bucket TerraVow/${folderPath}`;
 
     console.log(`✅ ${summary}`);
 
@@ -75,8 +98,8 @@ export const saveCreativesStep = createStep({
       success: true,
       totalCreativesGenerated: creatives.length,
       creatives,
-      outputDirectory: outputDir,
-      manifestPath,
+      outputDirectory: `https://supabase.co/storage/TerraVow/${folderPath}`,
+      manifestPath: uploadResult.publicUrl,
       summary,
     };
   },

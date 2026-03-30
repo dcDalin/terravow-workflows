@@ -183,7 +183,7 @@ export const creativeOutputSchema = z.object({
 
   imageUrl: z.string().optional(),
   imageData: z.string().optional(), // base64 if generated
-  localPath: z.string(),
+  localPath: z.string().describe("Public URL to the image in Supabase Storage"),
 
   prompt: z.string(),
   aspectRatio: z.string(),
@@ -205,8 +205,8 @@ export const workflowOutputSchema = z.object({
   success: z.boolean(),
   totalCreativesGenerated: z.number(),
   creatives: z.array(creativeOutputSchema),
-  outputDirectory: z.string(),
-  manifestPath: z.string(),
+  outputDirectory: z.string().describe("Supabase Storage bucket path"),
+  manifestPath: z.string().describe("Public URL to the manifest.json in Supabase Storage"),
   summary: z.string(),
 });
 

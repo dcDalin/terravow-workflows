@@ -46,8 +46,8 @@ const generateAdCreativesWorkflow = createWorkflow({
     3. Prepare Tasks - Select templates and create generation task list
     4. Customize Prompts - Replace placeholders with product details
     5. Verify Gemini Key - Check API key is valid before generation
-    6. Generate Images - Create ad creatives using Gemini (parallel with concurrency)
-    7. Save Creatives - Save results and generate manifest
+    6. Generate Images - Create ad creatives using Gemini and upload to Supabase Storage (parallel with concurrency)
+    7. Save Creatives - Upload manifest to Supabase Storage and return results
   `,
   inputSchema: generateAdCreativesInputSchema,
   outputSchema: workflowOutputSchema,
@@ -65,17 +65,17 @@ const generateAdCreativesWorkflow = createWorkflow({
   .map(async ({ inputData }) => {
     const { originalInput, logo, productImages, customizedPrompts } = inputData;
 
-    console.log(`🎨 Preparing ${customizedPrompts.length} image(s) for parallel generation and saving...`);
+    console.log(`🎨 Preparing ${customizedPrompts.length} image(s) for parallel generation and upload to Supabase...`);
 
-    // Determine output directory
+    // Determine storage folder path for Supabase
     const sanitizedTitle = originalInput.productTitle
       .replace(/[^a-zA-Z0-9-_]/g, "-")
       .toLowerCase();
     const outputDirectory =
       originalInput.outputDirectory ||
-      `./output/${sanitizedTitle}/${Date.now()}`;
+      `src/mastra/public/output/${sanitizedTitle}/${Date.now()}`;
 
-    console.log(`📁 Output directory: ${outputDirectory}`);
+    console.log(`📁 Storage folder: ${outputDirectory}`);
 
     // Prepare reference images (logo + product images)
     const referenceImages = [logo, ...productImages].map(img => ({

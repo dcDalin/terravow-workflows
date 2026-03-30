@@ -84,13 +84,41 @@ export const generateImageGeminiTool = createTool({
       });
 
       // Extract image from response
+      console.log('🔍 Response structure:', JSON.stringify({
+        hasCandidates: !!response.candidates,
+        candidatesLength: response.candidates?.length,
+        firstCandidate: response.candidates?.[0] ? 'exists' : 'missing'
+      }));
+
       const candidate = response.candidates?.[0];
       if (!candidate) {
+        console.error('Full response:', JSON.stringify(response, null, 2));
         throw new Error('No candidates returned from Gemini. The model may have refused to generate the image.');
       }
 
+      // Validate response structure
+      if (!candidate.content) {
+        console.error('Invalid response: candidate.content is missing', JSON.stringify(candidate, null, 2));
+        throw new Error('Invalid response structure: candidate.content is missing');
+      }
+
+      if (!candidate.content.parts) {
+        console.error('Invalid response: candidate.content.parts is missing', JSON.stringify(candidate.content, null, 2));
+        throw new Error('Invalid response structure: candidate.content.parts is missing');
+      }
+
+      if (!Array.isArray(candidate.content.parts)) {
+        console.error('Invalid response: candidate.content.parts is not an array', typeof candidate.content.parts, JSON.stringify(candidate.content.parts, null, 2));
+        throw new Error('Invalid response structure: candidate.content.parts is not an array');
+      }
+
+      if (candidate.content.parts.length === 0) {
+        console.error('Invalid response: candidate.content.parts is empty');
+        throw new Error('Invalid response structure: candidate.content.parts is empty');
+      }
+
       // Find the image part in the response
-      const imagePart = candidate.content.parts.find(part => part.inlineData);
+      const imagePart = candidate.content.parts.find(part => part && part.inlineData);
       if (!imagePart || !imagePart.inlineData) {
         // Log response for debugging
         console.error('No image in response. Response parts:', candidate.content.parts);

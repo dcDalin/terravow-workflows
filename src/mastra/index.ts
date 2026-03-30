@@ -12,6 +12,7 @@ import { processImageInputTool } from './tools/process-image-input';
 import { generateImageGeminiTool } from './tools/generate-image-gemini';
 import { writeFileTool } from './tools/write-file';
 import { ensureDirectoryTool } from './tools/ensure-directory';
+import { uploadToSupabaseTool } from './tools/upload-to-supabase';
 
 export const mastra = new Mastra({
   workflows: { weatherWorkflow, generateAdCreativesWorkflow },
@@ -21,6 +22,7 @@ export const mastra = new Mastra({
     generateImageGeminiTool,
     writeFileTool,
     ensureDirectoryTool,
+    uploadToSupabaseTool,
   },
   scorers: { toolCallAppropriatenessScorer, completenessScorer, translationScorer },
   storage: new LibSQLStore({
