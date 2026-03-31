@@ -122,6 +122,13 @@ export const generateAdCreativesInputSchema = z.object({
     .string()
     .optional()
     .describe("Custom output directory (optional)"),
+
+  storageDestination: z
+    .enum(["supabase", "local"])
+    .default("supabase")
+    .describe(
+      'Where to save generated files: "supabase" = upload to Supabase Storage, "local" = save to output directory on disk',
+    ),
 });
 
 export type GenerateAdCreativesInput = z.infer<
@@ -183,7 +190,7 @@ export const creativeOutputSchema = z.object({
 
   imageUrl: z.string().optional(),
   imageData: z.string().optional(), // base64 if generated
-  localPath: z.string().describe("Public URL to the image in Supabase Storage"),
+  localPath: z.string().describe("Path or public URL where the image was saved"),
 
   prompt: z.string(),
   aspectRatio: z.string(),
@@ -205,8 +212,8 @@ export const workflowOutputSchema = z.object({
   success: z.boolean(),
   totalCreativesGenerated: z.number(),
   creatives: z.array(creativeOutputSchema),
-  outputDirectory: z.string().describe("Supabase Storage bucket path"),
-  manifestPath: z.string().describe("Public URL to the manifest.json in Supabase Storage"),
+  outputDirectory: z.string().describe("Storage path or directory where files were saved"),
+  manifestPath: z.string().describe("Path or public URL to the manifest.json"),
   summary: z.string(),
 });
 

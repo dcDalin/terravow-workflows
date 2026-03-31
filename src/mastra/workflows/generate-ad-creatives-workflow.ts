@@ -96,6 +96,7 @@ const generateAdCreativesWorkflow = createWorkflow({
       productTitle: originalInput.productTitle,
       imageSize: imageSize as any,
       outputDirectory,
+      storageDestination: (originalInput.storageDestination ?? "supabase") as "supabase" | "local",
       referenceImages,
     }));
   })
@@ -114,6 +115,7 @@ const generateAdCreativesWorkflow = createWorkflow({
     return {
       originalInput: verifyStepOutput.originalInput,
       creatives,
+      storageDestination: (verifyStepOutput.originalInput.storageDestination ?? "supabase") as "supabase" | "local",
     };
   })
   .then(saveCreativesStep);
