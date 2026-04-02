@@ -80,7 +80,9 @@ export const generateSingleImageStep = createStep({
       }
 
       // Generate filename
-      const fileName = `${templateName.replace(/[^a-zA-Z0-9-_]/g, "-")}-v${variationNumber}.${fileExtension}`;
+      const sanitizedProduct = productTitle.replace(/[^a-zA-Z0-9-_]/g, "-").toLowerCase();
+      const sanitizedTemplate = templateName.replace(/[^a-zA-Z0-9-_]/g, "-");
+      const fileName = `${sanitizedProduct}-${sanitizedTemplate}-v${variationNumber}.${fileExtension}`;
 
       let savedPath: string;
 

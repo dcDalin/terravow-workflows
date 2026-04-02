@@ -1,4 +1,6 @@
 import { createWorkflow } from "@mastra/core/workflows";
+import { resolve, dirname } from "path";
+import { fileURLToPath } from "url";
 import {
   generateAdCreativesInputSchema,
   workflowOutputSchema,
@@ -71,10 +73,10 @@ const generateAdCreativesWorkflow = createWorkflow({
     const sanitizedTitle = originalInput.productTitle
       .replace(/[^a-zA-Z0-9-_]/g, "-")
       .toLowerCase();
+    const __dirname = dirname(fileURLToPath(import.meta.url));
     const outputDirectory =
       originalInput.outputDirectory ||
-      `src/mastra/public/output/${sanitizedTitle}/${Date.now()}`;
-
+      resolve(__dirname, "../public/output", sanitizedTitle, String(Date.now()));
     console.log(`📁 Storage folder: ${outputDirectory}`);
 
     // Prepare reference images (logo + product images)

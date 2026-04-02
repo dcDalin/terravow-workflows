@@ -118,6 +118,21 @@ export const generateAdCreativesInputSchema = z.object({
       'Image generation model (e.g., "nano-gpt/gpt-5-pro"). Leave empty for default.',
     ),
 
+  brandWebsite: z
+    .string()
+    .optional()
+    .describe('Brand website URL to display in creatives (e.g., "www.terravow.com")'),
+
+  ctaText: z
+    .string()
+    .optional()
+    .describe('CTA button text (e.g., "SHOP NOW", "GET YOURS TODAY"). Defaults to "SHOP NOW".'),
+
+  reviewCount: z
+    .string()
+    .optional()
+    .describe('Review count for social proof elements (e.g., "10,000+", "50,000+").'),
+
   outputDirectory: z
     .string()
     .optional()
