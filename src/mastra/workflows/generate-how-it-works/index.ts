@@ -1,6 +1,5 @@
 import { createWorkflow } from "@mastra/core/workflows";
-import { resolve, dirname } from "path";
-import { fileURLToPath } from "url";
+import { resolve } from "path";
 import {
   generateHowItWorksInputSchema,
   howItWorksOutputSchema,
@@ -64,15 +63,9 @@ const generateHowItWorksWorkflow = createWorkflow({
       .replace(/[^a-zA-Z0-9-_]/g, "-")
       .toLowerCase();
 
-    const __dirname = dirname(fileURLToPath(import.meta.url));
     const outputDirectory =
       originalInput.outputDirectory ||
-      resolve(
-        __dirname,
-        "../public/output",
-        sanitizedTitle,
-        String(Date.now()),
-      );
+      resolve("/Users/dc_dalin/Desktop/TerraVowAssets", sanitizedTitle, String(Date.now()));
 
     console.log(`📁 Output directory: ${outputDirectory}`);
 

@@ -43,27 +43,36 @@ export const generateHowItWorksImageStep = createStep({
 
     console.log(`🎨 Generating image for ${stepLabel}: "${title}"...`);
 
-    const prompt = `Create a premium scientific infographic illustration in the style of a high-end pharmaceutical or nutraceutical advertisement.
+    const prompt = `Create a high-converting, premium scientific infographic illustration for a health/wellness product advertisement. This image must make viewers feel hopeful, curious, and compelled to learn more about "${productTitle}".
 
-BACKGROUND VISUAL: ${visualTheme}. Use a deep navy, midnight teal, or dark indigo color palette. Highly detailed photorealistic CGI biological visualization with bioluminescent glow effects, subtle particle systems, and cinematic depth of field. No background text or watermarks.
+BACKGROUND VISUAL: ${visualTheme}. Deep navy, midnight teal, or dark indigo palette. Photorealistic CGI biological visualization — rich detail, bioluminescent glow, subtle particle systems, cinematic depth of field. The biological scene should look alive and active, conveying transformation and renewal happening right now. No background text or watermarks.
 
-TEXT OVERLAYS — place these directly on the image in clean sans-serif typography:
+PERSUASIVE DESIGN PRINCIPLES:
+- The biological imagery must feel aspirational — viewers should think "this is what's happening inside me when I use this product"
+- Use warm golden or amber accent lighting on key biological elements to suggest vitality, energy, and positive change
+- The overall mood should be: scientific credibility + emotional hope + premium quality
+- Composition should draw the eye from the step label → title → biology → description in a natural flow
+
+TEXT OVERLAYS — crisp, clean sans-serif typography:
 
 TOP: "${stepLabel}"
-  - Small, wide-tracked uppercase letters
-  - Light teal or soft white color, semi-transparent
-  - Centered near the top, with breathing room
+  - Small, wide-tracked uppercase, soft white or light teal, semi-transparent
+  - Centered with generous top padding
 
-MIDDLE: "${title}"
-  - Large, bold, prominent white headline
-  - The most visually dominant text element
-  - Centered vertically
+CENTER-TOP: "${title}"
+  - Large, bold, commanding white headline — the hero of the image
+  - Slight warm glow or subtle gradient to make it pop
+  - Should feel like a benefit promise, not just a label
+
+CENTER: [the biological visualization — this is the emotional core of the image]
+  - The most visually striking element; should feel cinematic and awe-inspiring
 
 BOTTOM: "${description}"
-  - Smaller white body text, elegant and readable
-  - Centered near the bottom with padding
+  - Clean, readable white body text, slightly smaller
+  - Centered with bottom padding
+  - Reinforces the benefit shown in the biology above
 
-OVERALL STYLE: Premium health brand aesthetic — dark, cinematic, scientific. Think Apple product visuals but biological. Clean negative space, no clutter. All text must be clearly legible with subtle text shadow or glow for contrast.`;
+OVERALL STYLE: Think premium supplement or biotech brand — the visual language of brands like AG1, Viome, or Thorne. Dark, cinematic, scientific credibility with emotional warmth. Every element should say "this product works and it's worth it." All text clearly legible with subtle drop shadow or glow.`;
 
     const result = await generateImageGeminiTool.execute!(
       {
