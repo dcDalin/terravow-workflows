@@ -10,6 +10,7 @@ import { generateAdCreativesWorkflow } from './workflows/generate-ad-creatives';
 import { generateHowItWorksWorkflow } from './workflows/generate-how-it-works';
 import { weatherAgent } from './agents/weather-agent';
 import { productAnalyzerAgent } from './agents/product-analyzer-agent';
+import { howItWorksAgent } from './agents/how-it-works-agent';
 import { toolCallAppropriatenessScorer, completenessScorer, translationScorer } from './scorers/weather-scorer';
 import { processImageInputTool } from './tools/process-image-input';
 import { generateImageGeminiTool } from './tools/generate-image-gemini';
@@ -21,7 +22,7 @@ const duckdbStore = new DuckDBStore({ path: './observability.duckdb' });
 
 export const mastra = new Mastra({
   workflows: { weatherWorkflow, generateAdCreativesWorkflow, generateHowItWorksWorkflow },
-  agents: { weatherAgent, productAnalyzerAgent },
+  agents: { weatherAgent, productAnalyzerAgent, howItWorksAgent },
   tools: {
     processImageInputTool,
     generateImageGeminiTool,
