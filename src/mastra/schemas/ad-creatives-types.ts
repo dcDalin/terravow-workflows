@@ -176,6 +176,15 @@ export const productAnalysisSchema = z.object({
 
 export type ProductAnalysis = z.infer<typeof productAnalysisSchema>;
 
+// Processed image reference — URL only, no base64 data.
+// Keeping base64 out of step outputs prevents workflow snapshots from bloating LibSQL.
+export const processedImageRefSchema = z.object({
+  mimeType: z.string(),
+  originalSource: z.string(),
+  filename: z.string(),
+});
+export type ProcessedImageRef = z.infer<typeof processedImageRefSchema>;
+
 // Generation task
 export const generationTaskSchema = z.object({
   templateId: z.number(),

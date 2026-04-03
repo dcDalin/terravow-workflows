@@ -3,7 +3,8 @@ import { z } from "zod";
 import {
   generateAdCreativesInputSchema,
   productAnalysisSchema,
-} from "../../schemas/ad-creatives-types";
+  processedImageRefSchema,
+} from "../../../schemas/ad-creatives-types";
 
 /**
  * Step 2: Analyze product and recommend templates using AI
@@ -13,38 +14,14 @@ export const analyzeProductStep = createStep({
   description: "AI analyzes product and recommends templates",
   inputSchema: z.object({
     originalInput: generateAdCreativesInputSchema,
-    logo: z.object({
-      data: z.string(),
-      mimeType: z.string(),
-      originalSource: z.string(),
-      filename: z.string(),
-    }),
-    productImages: z.array(
-      z.object({
-        data: z.string(),
-        mimeType: z.string(),
-        originalSource: z.string(),
-        filename: z.string(),
-      }),
-    ),
+    logo: processedImageRefSchema,
+    productImages: z.array(processedImageRefSchema),
     processingTime: z.number(),
   }),
   outputSchema: z.object({
     originalInput: generateAdCreativesInputSchema,
-    logo: z.object({
-      data: z.string(),
-      mimeType: z.string(),
-      originalSource: z.string(),
-      filename: z.string(),
-    }),
-    productImages: z.array(
-      z.object({
-        data: z.string(),
-        mimeType: z.string(),
-        originalSource: z.string(),
-        filename: z.string(),
-      }),
-    ),
+    logo: processedImageRefSchema,
+    productImages: z.array(processedImageRefSchema),
     analysis: productAnalysisSchema,
   }),
   execute: async ({ inputData, mastra }) => {

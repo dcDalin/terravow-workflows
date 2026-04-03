@@ -4,7 +4,7 @@ import { fileURLToPath } from "url";
 import {
   generateAdCreativesInputSchema,
   workflowOutputSchema,
-} from "../schemas/ad-creatives-types";
+} from "../../schemas/ad-creatives-types";
 import { processAssetsStep } from "./steps/process-assets-step";
 import { analyzeProductStep } from "./steps/analyze-product-step";
 import { prepareGenerationTasksStep } from "./steps/prepare-generation-tasks-step";
@@ -79,11 +79,9 @@ const generateAdCreativesWorkflow = createWorkflow({
       resolve(__dirname, "../public/output", sanitizedTitle, String(Date.now()));
     console.log(`📁 Storage folder: ${outputDirectory}`);
 
-    // Prepare reference images (logo + product images)
-    const referenceImages = [logo, ...productImages].map(img => ({
-      data: img.data,
-      mimeType: img.mimeType,
-    }));
+    // Pass only URLs — each generateSingleImageStep re-fetches them fresh.
+    // This keeps foreach snapshot items lean (no base64 duplication per task).
+    const referenceImageUrls = [logo, ...productImages].map(img => img.originalSource);
 
     // Determine image size from model setting
     const imageSize = originalInput.imageGenerationModel?.includes('4K') ? '4K' : '2K';
@@ -99,7 +97,7 @@ const generateAdCreativesWorkflow = createWorkflow({
       imageSize: imageSize as any,
       outputDirectory,
       storageDestination: (originalInput.storageDestination ?? "supabase") as "supabase" | "local",
-      referenceImages,
+      referenceImageUrls,
     }));
   })
   // ForEach: Generate images in parallel (concurrency: 3)

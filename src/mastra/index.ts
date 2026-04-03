@@ -1,10 +1,13 @@
 
 import { Mastra } from '@mastra/core/mastra';
+import { MastraCompositeStore } from '@mastra/core/storage';
 import { PinoLogger } from '@mastra/loggers';
 import { LibSQLStore } from '@mastra/libsql';
+import { DuckDBStore } from '@mastra/duckdb';
 import { Observability, DefaultExporter, CloudExporter, SensitiveDataFilter } from '@mastra/observability';
-import { weatherWorkflow } from './workflows/weather-workflow';
-import { generateAdCreativesWorkflow } from './workflows/generate-ad-creatives-workflow';
+import { weatherWorkflow } from './workflows/weather';
+import { generateAdCreativesWorkflow } from './workflows/generate-ad-creatives';
+import { generateHowItWorksWorkflow } from './workflows/generate-how-it-works';
 import { weatherAgent } from './agents/weather-agent';
 import { productAnalyzerAgent } from './agents/product-analyzer-agent';
 import { toolCallAppropriatenessScorer, completenessScorer, translationScorer } from './scorers/weather-scorer';
@@ -14,8 +17,10 @@ import { writeFileTool } from './tools/write-file';
 import { ensureDirectoryTool } from './tools/ensure-directory';
 import { uploadToSupabaseTool } from './tools/upload-to-supabase';
 
+const duckdbStore = new DuckDBStore({ path: './observability.duckdb' });
+
 export const mastra = new Mastra({
-  workflows: { weatherWorkflow, generateAdCreativesWorkflow },
+  workflows: { weatherWorkflow, generateAdCreativesWorkflow, generateHowItWorksWorkflow },
   agents: { weatherAgent, productAnalyzerAgent },
   tools: {
     processImageInputTool,
@@ -25,10 +30,17 @@ export const mastra = new Mastra({
     uploadToSupabaseTool,
   },
   scorers: { toolCallAppropriatenessScorer, completenessScorer, translationScorer },
-  storage: new LibSQLStore({
-    id: "mastra-storage",
-    // stores observability, scores, ... into persistent file storage
-    url: "file:./mastra.db",
+  storage: new MastraCompositeStore({
+    id: 'composite-storage',
+    default: new LibSQLStore({
+      id: 'mastra-storage',
+      url: 'file:./mastra.db',
+    }),
+    domains: {
+      // Observability traces/logs go to DuckDB (OLAP, handles high volume)
+      // so image generation runs don't bloat mastra.db
+      observability: await duckdbStore.getStore('observability'),
+    },
   }),
   logger: new PinoLogger({
     name: 'Mastra',

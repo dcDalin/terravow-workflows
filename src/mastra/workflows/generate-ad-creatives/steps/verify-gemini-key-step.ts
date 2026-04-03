@@ -4,7 +4,8 @@ import {
   generateAdCreativesInputSchema,
   productAnalysisSchema,
   customizedPromptSchema,
-} from "../../schemas/ad-creatives-types";
+  processedImageRefSchema,
+} from "../../../schemas/ad-creatives-types";
 import { GoogleGenAI } from "@google/genai";
 
 /**
@@ -16,39 +17,15 @@ export const verifyGeminiKeyStep = createStep({
   description: "Verify GOOGLE_API_KEY exists and is valid",
   inputSchema: z.object({
     originalInput: generateAdCreativesInputSchema,
-    logo: z.object({
-      data: z.string(),
-      mimeType: z.string(),
-      originalSource: z.string(),
-      filename: z.string(),
-    }),
-    productImages: z.array(
-      z.object({
-        data: z.string(),
-        mimeType: z.string(),
-        originalSource: z.string(),
-        filename: z.string(),
-      }),
-    ),
+    logo: processedImageRefSchema,
+    productImages: z.array(processedImageRefSchema),
     analysis: productAnalysisSchema,
     customizedPrompts: z.array(customizedPromptSchema),
   }),
   outputSchema: z.object({
     originalInput: generateAdCreativesInputSchema,
-    logo: z.object({
-      data: z.string(),
-      mimeType: z.string(),
-      originalSource: z.string(),
-      filename: z.string(),
-    }),
-    productImages: z.array(
-      z.object({
-        data: z.string(),
-        mimeType: z.string(),
-        originalSource: z.string(),
-        filename: z.string(),
-      }),
-    ),
+    logo: processedImageRefSchema,
+    productImages: z.array(processedImageRefSchema),
     analysis: productAnalysisSchema,
     customizedPrompts: z.array(customizedPromptSchema),
     verified: z.boolean(),

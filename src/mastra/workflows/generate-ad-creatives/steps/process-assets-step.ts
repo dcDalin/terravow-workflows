@@ -1,7 +1,7 @@
 import { createStep } from "@mastra/core/workflows";
 import { z } from "zod";
-import { generateAdCreativesInputSchema } from "../../schemas/ad-creatives-types";
-import { processImageInputTool } from "../../tools/process-image-input";
+import { generateAdCreativesInputSchema, processedImageRefSchema } from "../../../schemas/ad-creatives-types";
+import { processImageInputTool } from "../../../tools/process-image-input";
 
 /**
  * Step 1: Process and validate input assets
@@ -12,20 +12,8 @@ export const processAssetsStep = createStep({
   inputSchema: generateAdCreativesInputSchema,
   outputSchema: z.object({
     originalInput: generateAdCreativesInputSchema,
-    logo: z.object({
-      data: z.string(),
-      mimeType: z.string(),
-      originalSource: z.string(),
-      filename: z.string(),
-    }),
-    productImages: z.array(
-      z.object({
-        data: z.string(),
-        mimeType: z.string(),
-        originalSource: z.string(),
-        filename: z.string(),
-      }),
-    ),
+    logo: processedImageRefSchema,
+    productImages: z.array(processedImageRefSchema),
     processingTime: z.number(),
   }),
   execute: async ({ inputData, requestContext, mastra }) => {
@@ -100,10 +88,12 @@ export const processAssetsStep = createStep({
       `✅ All assets processed in ${processingTime}ms (${productImagesResults.length + 1} images)`,
     );
 
+    // Strip base64 data — only forward URLs. base64 is re-fetched in generateSingleImageStep
+    // right before calling Gemini, keeping workflow snapshots lean.
     return {
       originalInput: inputData,
-      logo: logoResult,
-      productImages: productImagesResults,
+      logo: { mimeType: logoResult.mimeType, originalSource: logoResult.originalSource, filename: logoResult.filename },
+      productImages: productImagesResults.map(img => ({ mimeType: img.mimeType, originalSource: img.originalSource, filename: img.filename })),
       processingTime,
     };
   },

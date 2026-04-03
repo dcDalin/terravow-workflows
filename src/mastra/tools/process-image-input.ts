@@ -19,11 +19,16 @@ export const processImageInputTool = createTool({
     filename: z.string(),
   }),
   execute: async ({ input }) => {
-    // Fetch image from URL
-    const response = await fetch(input);
+    // Fetch image from URL with browser-like headers to avoid hotlink blocks
+    const response = await fetch(input, {
+      headers: {
+        "User-Agent": "Mozilla/5.0 (compatible; TerraVow/1.0)",
+        "Accept": "image/webp,image/png,image/jpeg,image/*,*/*;q=0.8",
+      },
+    });
     if (!response.ok) {
       throw new Error(
-        `Failed to fetch image from URL: ${input} - ${response.statusText}`,
+        `Failed to fetch image from URL (${response.status}): ${input} - ${response.statusText}`,
       );
     }
 

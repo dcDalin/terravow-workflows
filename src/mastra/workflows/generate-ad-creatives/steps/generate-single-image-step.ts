@@ -1,10 +1,10 @@
 import { createStep } from "@mastra/core/workflows";
 import { z } from "zod";
 import { resolve } from "path";
-import { creativeOutputSchema } from "../../schemas/ad-creatives-types";
-import { generateImageGeminiTool } from "../../tools/generate-image-gemini";
-import { uploadToSupabaseTool } from "../../tools/upload-to-supabase";
-import { writeFileTool } from "../../tools/write-file";
+import { creativeOutputSchema } from "../../../schemas/ad-creatives-types";
+import { generateImageGeminiTool } from "../../../tools/generate-image-gemini";
+import { uploadToSupabaseTool } from "../../../tools/upload-to-supabase";
+import { writeFileTool } from "../../../tools/write-file";
 
 /**
  * Step: Generate and save a single image
@@ -25,12 +25,8 @@ export const generateSingleImageStep = createStep({
     imageSize: z.enum(["512", "1K", "2K", "4K"]),
     outputDirectory: z.string(),
     storageDestination: z.enum(["supabase", "local"]).default("supabase"),
-    referenceImages: z.array(
-      z.object({
-        data: z.string(),
-        mimeType: z.string(),
-      })
-    ),
+    // URLs only — base64 is fetched fresh here to keep workflow snapshots lean
+    referenceImageUrls: z.array(z.string()),
   }),
   outputSchema: creativeOutputSchema,
   execute: async ({ inputData, requestContext, mastra }) => {
@@ -44,8 +40,25 @@ export const generateSingleImageStep = createStep({
       imageSize,
       outputDirectory,
       storageDestination,
-      referenceImages,
+      referenceImageUrls,
     } = inputData;
+
+    // Fetch reference images fresh — not stored in workflow state to keep snapshots lean.
+    // Browser-like headers are required since many hosts block plain server-side fetches.
+    const referenceImages = await Promise.all(
+      referenceImageUrls.map(async (url) => {
+        const resp = await fetch(url, {
+          headers: {
+            "User-Agent": "Mozilla/5.0 (compatible; TerraVow/1.0)",
+            "Accept": "image/webp,image/png,image/jpeg,image/*,*/*;q=0.8",
+          },
+        });
+        if (!resp.ok) throw new Error(`Failed to fetch reference image (${resp.status}): ${url}`);
+        const buffer = await resp.arrayBuffer();
+        const mimeType = resp.headers.get("content-type") || "image/png";
+        return { data: Buffer.from(buffer).toString("base64"), mimeType };
+      })
+    );
 
     console.log(
       `🎨 Generating image for ${templateName} variation ${variationNumber}...`

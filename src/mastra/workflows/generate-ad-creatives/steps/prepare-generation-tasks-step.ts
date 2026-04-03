@@ -4,8 +4,9 @@ import {
   generateAdCreativesInputSchema,
   productAnalysisSchema,
   generationTaskSchema,
-} from "../../schemas/ad-creatives-types";
-import { getCreativeForPrompt } from "../../utils/prompt-creative-mapping";
+  processedImageRefSchema,
+} from "../../../schemas/ad-creatives-types";
+import { getCreativeForPrompt } from "../../../utils/prompt-creative-mapping";
 
 /**
  * Step 3: Select templates and create generation task list
@@ -15,38 +16,14 @@ export const prepareGenerationTasksStep = createStep({
   description: "Select templates and create generation task list",
   inputSchema: z.object({
     originalInput: generateAdCreativesInputSchema,
-    logo: z.object({
-      data: z.string(),
-      mimeType: z.string(),
-      originalSource: z.string(),
-      filename: z.string(),
-    }),
-    productImages: z.array(
-      z.object({
-        data: z.string(),
-        mimeType: z.string(),
-        originalSource: z.string(),
-        filename: z.string(),
-      }),
-    ),
+    logo: processedImageRefSchema,
+    productImages: z.array(processedImageRefSchema),
     analysis: productAnalysisSchema,
   }),
   outputSchema: z.object({
     originalInput: generateAdCreativesInputSchema,
-    logo: z.object({
-      data: z.string(),
-      mimeType: z.string(),
-      originalSource: z.string(),
-      filename: z.string(),
-    }),
-    productImages: z.array(
-      z.object({
-        data: z.string(),
-        mimeType: z.string(),
-        originalSource: z.string(),
-        filename: z.string(),
-      }),
-    ),
+    logo: processedImageRefSchema,
+    productImages: z.array(processedImageRefSchema),
     analysis: productAnalysisSchema,
     tasks: z.array(generationTaskSchema),
   }),

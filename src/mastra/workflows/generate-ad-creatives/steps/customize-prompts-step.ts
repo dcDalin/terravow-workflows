@@ -5,8 +5,9 @@ import {
   productAnalysisSchema,
   generationTaskSchema,
   customizedPromptSchema,
-} from "../../schemas/ad-creatives-types";
-import { getCreativeForPrompt } from "../../utils/prompt-creative-mapping";
+  processedImageRefSchema,
+} from "../../../schemas/ad-creatives-types";
+import { getCreativeForPrompt } from "../../../utils/prompt-creative-mapping";
 
 /**
  * Step 4: Customize template prompts with product details
@@ -16,39 +17,15 @@ export const customizePromptsStep = createStep({
   description: "Customize template prompts with product details",
   inputSchema: z.object({
     originalInput: generateAdCreativesInputSchema,
-    logo: z.object({
-      data: z.string(),
-      mimeType: z.string(),
-      originalSource: z.string(),
-      filename: z.string(),
-    }),
-    productImages: z.array(
-      z.object({
-        data: z.string(),
-        mimeType: z.string(),
-        originalSource: z.string(),
-        filename: z.string(),
-      }),
-    ),
+    logo: processedImageRefSchema,
+    productImages: z.array(processedImageRefSchema),
     analysis: productAnalysisSchema,
     tasks: z.array(generationTaskSchema),
   }),
   outputSchema: z.object({
     originalInput: generateAdCreativesInputSchema,
-    logo: z.object({
-      data: z.string(),
-      mimeType: z.string(),
-      originalSource: z.string(),
-      filename: z.string(),
-    }),
-    productImages: z.array(
-      z.object({
-        data: z.string(),
-        mimeType: z.string(),
-        originalSource: z.string(),
-        filename: z.string(),
-      }),
-    ),
+    logo: processedImageRefSchema,
+    productImages: z.array(processedImageRefSchema),
     analysis: productAnalysisSchema,
     customizedPrompts: z.array(customizedPromptSchema),
   }),
