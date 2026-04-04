@@ -8,9 +8,11 @@ import { Observability, DefaultExporter, CloudExporter, SensitiveDataFilter } fr
 import { weatherWorkflow } from './workflows/weather';
 import { generateAdCreativesWorkflow } from './workflows/generate-ad-creatives';
 import { generateHowItWorksWorkflow } from './workflows/generate-how-it-works';
+import { generateFaqsWorkflow } from './workflows/generate-faqs';
 import { weatherAgent } from './agents/weather-agent';
 import { productAnalyzerAgent } from './agents/product-analyzer-agent';
 import { howItWorksAgent } from './agents/how-it-works-agent';
+import { faqsAgent } from './agents/faqs-agent';
 import { toolCallAppropriatenessScorer, completenessScorer, translationScorer } from './scorers/weather-scorer';
 import { processImageInputTool } from './tools/process-image-input';
 import { generateImageGeminiTool } from './tools/generate-image-gemini';
@@ -21,8 +23,8 @@ import { uploadToSupabaseTool } from './tools/upload-to-supabase';
 const duckdbStore = new DuckDBStore({ path: './observability.duckdb' });
 
 export const mastra = new Mastra({
-  workflows: { weatherWorkflow, generateAdCreativesWorkflow, generateHowItWorksWorkflow },
-  agents: { weatherAgent, productAnalyzerAgent, howItWorksAgent },
+  workflows: { weatherWorkflow, generateAdCreativesWorkflow, generateHowItWorksWorkflow, generateFaqsWorkflow },
+  agents: { weatherAgent, productAnalyzerAgent, howItWorksAgent, faqsAgent },
   tools: {
     processImageInputTool,
     generateImageGeminiTool,
