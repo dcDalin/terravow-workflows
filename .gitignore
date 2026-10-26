@@ -10,3 +10,6 @@ dist
 .vercel
 src/mastra/public/output
 assets
+# Observability traces (DuckDB) change on every dev run
+*.duckdb
+*.duckdb.wal

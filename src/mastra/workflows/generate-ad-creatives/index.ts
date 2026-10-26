@@ -11,29 +11,40 @@ import { customizePromptsStep } from "./steps/customize-prompts-step";
 import { verifyGeminiKeyStep } from "./steps/verify-gemini-key-step";
 import { generateSingleImageStep } from "./steps/generate-single-image-step";
 import { saveCreativesStep } from "./steps/save-creatives-step";
+import { BRAND } from "../../brand/atlasair";
+import { resolveProduct } from "../../brand/products";
 
 const generateAdCreativesWorkflow = createWorkflow({
   id: "generate-ad-creatives",
   description: `
     🎨 Ad Creative Generator Workflow
 
-    Generates professional ad creatives from product information using AI-powered template selection and image generation.
+    Generates AtlasAir ad creatives from product information using AI-powered template selection and image generation.
 
     📋 QUICK START:
 
-    Minimal config:
+    Minimal config — a catalogue product fills in its own title and description:
     {
-      "productTitle": "Your Product",
-      "productDescription": "Detailed multi-paragraph product description highlighting key features, benefits, and unique selling points. You can include multiple paragraphs to provide comprehensive information about your product.",
-      "logo": "https://example.com/logo.png",
-      "productImages": ["https://example.com/product1.jpg", "https://example.com/product2.jpg"],
+      "productKey": "atlasair-2",
+      "logo": "https://cdn.example.com/atlasair-logo.png",
+      "productImages": ["https://cdn.example.com/atlasair-2-hero.jpg"],
       "templateSelectionMode": "ai",
       "creativesPerTemplate": 1
     }
 
+    Product keys: "atlasair-2" · "atlasair-plus" · "first-aid-kit" · "cpr-course"
+    (or pass productTitle + productDescription for anything not in the catalogue)
+
     🎯 TEMPLATE MODES:
     • "ai": AI picks best templates (set aiSelectTemplateCount)
-    • "manual": You choose (set templateIds: [1, 11, 21])
+    • "manual": You choose (set templateIds: [1, 27, 28])
+
+    ⚖️ BRAND POLICY — enforced in code, not just in prompts:
+    • Templates that fabricate press coverage, social proof or urgency are blocked outright
+      and will throw if selected manually (see src/mastra/brand/template-policy.ts)
+    • Review, rating and testimonial templates are skipped unless you pass real Judge.me data
+      in "socialProof". Nothing is invented to fill an empty layout slot
+    • Every creative carries the airway-clearance-aid disclaimer as small print
 
     📸 IMAGE REQUIREMENTS:
     • All images must be publicly accessible URLs
@@ -66,35 +77,44 @@ const generateAdCreativesWorkflow = createWorkflow({
   .map(async ({ inputData }) => {
     const { originalInput, logo, productImages, customizedPrompts } = inputData;
 
-    console.log(`🎨 Preparing ${customizedPrompts.length} image(s) for parallel generation and upload to Supabase...`);
+    console.log(
+      `🎨 Preparing ${customizedPrompts.length} image(s) for parallel generation and upload to Supabase...`,
+    );
 
     // Determine storage folder path for Supabase
-    const sanitizedTitle = originalInput.productTitle
+    const product = resolveProduct(originalInput);
+    const sanitizedTitle = product.title
       .replace(/[^a-zA-Z0-9-_]/g, "-")
       .toLowerCase();
     const outputDirectory =
       originalInput.outputDirectory ||
-      resolve("/Users/dc_dalin/Desktop/TerraVowAssets", sanitizedTitle, String(Date.now()));
+      resolve(BRAND.assetRoot, sanitizedTitle, String(Date.now()));
     console.log(`📁 Storage folder: ${outputDirectory}`);
 
     // Pass only URLs — each generateSingleImageStep re-fetches them fresh.
     // This keeps foreach snapshot items lean (no base64 duplication per task).
-    const referenceImageUrls = [logo, ...productImages].map(img => img.originalSource);
+    const referenceImageUrls = [logo, ...productImages].map(
+      (img) => img.originalSource,
+    );
 
     // Determine image size from model setting
-    const imageSize = originalInput.imageGenerationModel?.includes('4K') ? '4K' : '2K';
+    const imageSize = originalInput.imageGenerationModel?.includes("4K")
+      ? "4K"
+      : "2K";
 
     // Return array of enriched items (each self-contained for generation and saving)
-    return customizedPrompts.map(prompt => ({
+    return customizedPrompts.map((prompt) => ({
       templateId: prompt.templateId,
       templateName: prompt.templateName,
       variationNumber: prompt.variationNumber,
       prompt: prompt.prompt,
       aspectRatio: prompt.aspectRatio,
-      productTitle: originalInput.productTitle,
+      productTitle: product.title,
       imageSize: imageSize as any,
       outputDirectory,
-      storageDestination: (originalInput.storageDestination ?? "supabase") as "supabase" | "local",
+      storageDestination: (originalInput.storageDestination ?? "supabase") as
+        | "supabase"
+        | "local",
       referenceImageUrls,
     }));
   })
@@ -113,7 +133,8 @@ const generateAdCreativesWorkflow = createWorkflow({
     return {
       originalInput: verifyStepOutput.originalInput,
       creatives,
-      storageDestination: (verifyStepOutput.originalInput.storageDestination ?? "supabase") as "supabase" | "local",
+      storageDestination: (verifyStepOutput.originalInput.storageDestination ??
+        "supabase") as "supabase" | "local",
     };
   })
   .then(saveCreativesStep);

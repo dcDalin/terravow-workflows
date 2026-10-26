@@ -1,16 +1,26 @@
-import { createTool } from '@mastra/core/tools';
-import { z } from 'zod';
-import { getCreativeForPrompt, getAllMappings, getPromptsByCategory, getAllCategories } from '../utils/prompt-creative-mapping';
+import { createTool } from "@mastra/core/tools";
+import { z } from "zod";
+import {
+  getCreativeForPrompt,
+  getAllMappings,
+  getPromptsByCategory,
+} from "../utils/prompt-creative-mapping";
+import {
+  getBlockReason,
+  isBlocked,
+  isOffCategory,
+} from "../brand/template-policy";
 
 /**
  * Tool to lookup template information by ID
  */
 
 export const lookupTemplateTool = createTool({
-  id: 'lookup-template',
-  description: 'Get template information including name, category, aspect ratio, and prompt text',
+  id: "lookup-template",
+  description:
+    "Get template information including name, category, aspect ratio, and prompt text",
   inputSchema: z.object({
-    templateId: z.number().int().min(1).max(40).describe('Template ID (1-40)'),
+    templateId: z.number().int().min(1).max(40).describe("Template ID (1-40)"),
   }),
   outputSchema: z.object({
     templateId: z.number(),
@@ -25,6 +35,18 @@ export const lookupTemplateTool = createTool({
 
     if (!mapping) {
       throw new Error(`Template ${templateId} not found. Valid IDs are 1-40.`);
+    }
+
+    if (isBlocked(templateId)) {
+      throw new Error(
+        `Template ${templateId} (${mapping.prompt.name}) is blocked by AtlasAir brand policy: ${getBlockReason(templateId)}`,
+      );
+    }
+
+    if (isOffCategory(templateId)) {
+      throw new Error(
+        `Template ${templateId} (${mapping.prompt.name}) is not applicable to the AtlasAir catalogue.`,
+      );
     }
 
     return {
@@ -43,10 +65,11 @@ export const lookupTemplateTool = createTool({
  */
 
 export const listTemplatesTool = createTool({
-  id: 'list-templates',
-  description: 'List all 40 available ad creative templates with their categories',
+  id: "list-templates",
+  description:
+    "List the ad creative templates AtlasAir is permitted to generate, with their categories. Templates blocked by brand policy (fabricated press, fabricated social proof, manufactured urgency) are excluded and cannot be requested.",
   inputSchema: z.object({
-    category: z.string().optional().describe('Filter by category (optional)'),
+    category: z.string().optional().describe("Filter by category (optional)"),
   }),
   outputSchema: z.object({
     templates: z.array(
@@ -56,24 +79,38 @@ export const listTemplatesTool = createTool({
         category: z.string(),
         aspectRatio: z.string(),
         tags: z.array(z.string()),
-      })
+      }),
     ),
     availableCategories: z.array(z.string()),
   }),
   execute: async ({ category }) => {
-    const mappings = category
-      ? getPromptsByCategory(category)
-      : getAllMappings();
+    const mappings = (
+      category ? getPromptsByCategory(category) : getAllMappings()
+    ).filter(
+      // Brand policy is applied here so blocked templates are absent from the
+      // agent's choices entirely, rather than merely discouraged in a prompt.
+      (m) => !isBlocked(m.prompt.id) && !isOffCategory(m.prompt.id),
+    );
 
     return {
-      templates: mappings.map(m => ({
+      templates: mappings.map((m) => ({
         id: m.prompt.id,
         name: m.prompt.name,
         category: m.prompt.category,
         aspectRatio: m.prompt.aspectRatio,
         tags: m.prompt.tags,
       })),
-      availableCategories: getAllCategories(),
+      // Categories are derived from the permitted set too, so the agent can't
+      // filter by a category that only blocked templates belong to.
+      availableCategories: Array.from(
+        new Set(
+          getAllMappings()
+            .filter(
+              (m) => !isBlocked(m.prompt.id) && !isOffCategory(m.prompt.id),
+            )
+            .map((m) => m.prompt.category),
+        ),
+      ).sort(),
     };
   },
 });

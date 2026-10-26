@@ -8,6 +8,8 @@ import {
 } from "../../../schemas/how-it-works-types";
 import { uploadToSupabaseTool } from "../../../tools/upload-to-supabase";
 import { writeFileTool } from "../../../tools/write-file";
+import { STORAGE_BUCKET } from "../../../utils/supabase";
+import { resolveProduct } from "../../../brand/products";
 
 /**
  * Final step: Write manifest for the generated how-it-works illustrations
@@ -26,6 +28,7 @@ export const saveHowItWorksStep = createStep({
     console.log("📋 Saving manifest...");
 
     const { originalInput, images, storageDestination } = inputData;
+    const product = resolveProduct(originalInput);
 
     if (images.length === 0) {
       return {
@@ -41,8 +44,8 @@ export const saveHowItWorksStep = createStep({
     const manifestContent = JSON.stringify(
       {
         generatedAt: new Date().toISOString(),
-        productTitle: originalInput.productTitle,
-        productDescription: originalInput.productDescription,
+        productTitle: product.title,
+        productDescription: product.description,
         totalImages: images.length,
         images: images.map((img) => ({
           stepNumber: img.stepNumber,
@@ -90,7 +93,7 @@ export const saveHowItWorksStep = createStep({
 
       console.log(`📋 Saved manifest: ${manifestPath}`);
 
-      const summary = `Successfully generated ${images.length} how-it-works illustrations for "${originalInput.productTitle}". Files saved locally to ${outputDir}`;
+      const summary = `Successfully generated ${images.length} how-it-works illustrations for "${product.title}". Files saved locally to ${outputDir}`;
       console.log(`✅ ${summary}`);
 
       return {
@@ -104,7 +107,7 @@ export const saveHowItWorksStep = createStep({
     } else {
       // Extract folder path from first image's Supabase URL
       const firstImageUrl = images[0].localPath;
-      const urlParts = firstImageUrl.split("/TerraVow/");
+      const urlParts = firstImageUrl.split(`/${STORAGE_BUCKET}/`);
       const folderPath =
         urlParts.length > 1
           ? urlParts[1].split("/").slice(0, -1).join("/")
@@ -133,14 +136,14 @@ export const saveHowItWorksStep = createStep({
 
       console.log(`📋 Uploaded manifest: ${uploadResult.publicUrl}`);
 
-      const summary = `Successfully generated ${images.length} how-it-works illustrations for "${originalInput.productTitle}". Files saved to Supabase Storage bucket TerraVow/${folderPath}`;
+      const summary = `Successfully generated ${images.length} how-it-works illustrations for "${product.title}". Files saved to Supabase Storage bucket ${STORAGE_BUCKET}/${folderPath}`;
       console.log(`✅ ${summary}`);
 
       return {
         success: true,
         totalImagesGenerated: images.length,
         images,
-        outputDirectory: `https://supabase.co/storage/TerraVow/${folderPath}`,
+        outputDirectory: `https://supabase.co/storage/${STORAGE_BUCKET}/${folderPath}`,
         manifestPath: uploadResult.publicUrl,
         summary,
       };

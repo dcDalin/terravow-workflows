@@ -4,6 +4,8 @@ import {
   generateHowItWorksInputSchema,
   howItWorksStepSchema,
 } from "../../../schemas/how-it-works-types";
+import { resolveProduct } from "../../../brand/products";
+import { productBlock } from "../../../brand/prompt-blocks";
 
 /**
  * Step 1: Generate how-it-works step content from product info using OpenAI via Mastra agent
@@ -19,28 +21,42 @@ export const generateHowItWorksStepsStep = createStep({
     steps: z.array(howItWorksStepSchema),
   }),
   execute: async ({ inputData, mastra }) => {
+    const product = resolveProduct(inputData);
+
     console.log(
-      `🧠 Generating ${inputData.stepCount} how-it-works steps for "${inputData.productTitle}"...`,
+      `🧠 Generating ${inputData.stepCount} how-it-works steps for "${product.title}"...`,
     );
 
     const agent = mastra?.getAgent("howItWorksAgent");
     if (!agent) {
-      throw new Error("howItWorksAgent not found — ensure it is registered in src/mastra/index.ts");
+      throw new Error(
+        "howItWorksAgent not found — ensure it is registered in src/mastra/index.ts",
+      );
     }
 
     const prompt = `Generate exactly ${inputData.stepCount} how-it-works steps for the following product.
 
-PRODUCT: ${inputData.productTitle}
-DESCRIPTION: ${inputData.productDescription}
+${productBlock(product)}
 
-Steps should show how this product works at a biological or cellular level, like premium medicine or supplement ads showing organs, cells, molecules, etc. Tell a logical progressive story of the product's mechanism of action.
+These steps double as instructions someone may need to recall under pressure. Describe the
+real sequence of using the product, in the order it actually happens.
+
+STEP 1 IS FIXED: it is always calling emergency services. Do not reorder it, do not soften
+it, do not merge it into another step.
 
 Each step must have:
 - stepNumber: integer starting at 1
 - stepLabel: "Step 1", "Step 2", etc.
-- title: short, powerful 3–6 word headline (e.g. "Reactivates Cellular Energy", "Restores Radiance & Vitality")
-- description: one brief sentence of 8–15 words (e.g. "Cells grow with renewed energy and youthful balance")
-- visualTheme: specific scientific CGI background for the image (e.g. "glowing mitochondria with ATP energy particles on dark teal background", "collagen fiber network with skin cell cross-section on deep navy background"). Be vivid and specific.
+- title: 3–6 word action title (e.g. "Call Emergency Services", "Seal The Mask", "Pull In One Motion")
+- description: one clear sentence of 8–15 words describing exactly what the person does
+- visualTheme: a calm, instructional illustration description — either a clean flat medical
+  illustration of the airway and mask placement on a light neutral background, or a realistic
+  calm domestic scene (kitchen, living room, car glovebox, a hand reaching for the case).
+  NEVER dark cinematic biotech, glowing cells, mitochondria, DNA or molecular renders.
+  NEVER a child in visible distress.
+
+Language: "helps dislodge a blockage" — never "removes the object" or "clears the airway".
+Invent no numbers: no countdown, no survival rate, no success percentage.
 
 Return ONLY a valid JSON array, no markdown:
 [
@@ -60,7 +76,9 @@ Return ONLY a valid JSON array, no markdown:
     }
 
     // Strip markdown code fences if present
-    const jsonMatch = response.text.match(/```(?:json)?\s*(\[[\s\S]*?\])\s*```/);
+    const jsonMatch = response.text.match(
+      /```(?:json)?\s*(\[[\s\S]*?\])\s*```/,
+    );
     const jsonText = jsonMatch ? jsonMatch[1] : response.text.trim();
 
     let steps;

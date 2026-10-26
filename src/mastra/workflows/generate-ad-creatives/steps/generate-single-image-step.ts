@@ -2,7 +2,10 @@ import { createStep } from "@mastra/core/workflows";
 import { z } from "zod";
 import { resolve } from "path";
 import { creativeOutputSchema } from "../../../schemas/ad-creatives-types";
-import { generateImageGeminiTool } from "../../../tools/generate-image-gemini";
+import {
+  generateImageGeminiTool,
+  imageExtensionForMimeType,
+} from "../../../tools/generate-image-gemini";
 import { uploadToSupabaseTool } from "../../../tools/upload-to-supabase";
 import { writeFileTool } from "../../../tools/write-file";
 
@@ -49,19 +52,22 @@ export const generateSingleImageStep = createStep({
       referenceImageUrls.map(async (url) => {
         const resp = await fetch(url, {
           headers: {
-            "User-Agent": "Mozilla/5.0 (compatible; TerraVow/1.0)",
-            "Accept": "image/webp,image/png,image/jpeg,image/*,*/*;q=0.8",
+            "User-Agent": "Mozilla/5.0 (compatible; AtlasAir/1.0)",
+            Accept: "image/webp,image/png,image/jpeg,image/*,*/*;q=0.8",
           },
         });
-        if (!resp.ok) throw new Error(`Failed to fetch reference image (${resp.status}): ${url}`);
+        if (!resp.ok)
+          throw new Error(
+            `Failed to fetch reference image (${resp.status}): ${url}`,
+          );
         const buffer = await resp.arrayBuffer();
         const mimeType = resp.headers.get("content-type") || "image/png";
         return { data: Buffer.from(buffer).toString("base64"), mimeType };
-      })
+      }),
     );
 
     console.log(
-      `🎨 Generating image for ${templateName} variation ${variationNumber}...`
+      `🎨 Generating image for ${templateName} variation ${variationNumber}...`,
     );
 
     try {
@@ -73,7 +79,7 @@ export const generateSingleImageStep = createStep({
           aspectRatio: aspectRatio as any,
           imageSize,
         },
-        { requestContext, mastra }
+        { requestContext, mastra },
       );
 
       // Type guard to ensure valid result
@@ -83,17 +89,14 @@ export const generateSingleImageStep = createStep({
 
       const timestamp = new Date().toISOString();
 
-      // Extract file extension from mime type or default to png
-      let fileExtension = "png";
-      let contentType = "image/png";
-      const mimeMatch = result.imageData.match(/^data:image\/(\w+);base64,/);
-      if (mimeMatch) {
-        fileExtension = mimeMatch[1];
-        contentType = `image/${fileExtension}`;
-      }
+      // Gemini returns raw base64; the format comes from its reported MIME type
+      const contentType = result.mimeType || "image/png";
+      const fileExtension = imageExtensionForMimeType(contentType);
 
       // Generate filename
-      const sanitizedProduct = productTitle.replace(/[^a-zA-Z0-9-_]/g, "-").toLowerCase();
+      const sanitizedProduct = productTitle
+        .replace(/[^a-zA-Z0-9-_]/g, "-")
+        .toLowerCase();
       const sanitizedTemplate = templateName.replace(/[^a-zA-Z0-9-_]/g, "-");
       const fileName = `${sanitizedProduct}-${sanitizedTemplate}-v${variationNumber}.${fileExtension}`;
 
@@ -109,11 +112,18 @@ export const generateSingleImageStep = createStep({
             encoding: "base64",
             createDirectories: true,
           },
-          { requestContext, mastra }
+          { requestContext, mastra },
         );
 
-        if (!writeResult || !("success" in writeResult) || !writeResult.success) {
-          const msg = writeResult && "message" in writeResult ? writeResult.message : "Unknown error";
+        if (
+          !writeResult ||
+          !("success" in writeResult) ||
+          !writeResult.success
+        ) {
+          const msg =
+            writeResult && "message" in writeResult
+              ? writeResult.message
+              : "Unknown error";
           throw new Error(`Failed to save file locally: ${msg}`);
         }
 
@@ -122,7 +132,7 @@ export const generateSingleImageStep = createStep({
       } else {
         // Upload to Supabase Storage
         // Extract the folder name from outputDirectory (e.g., "product-name/timestamp")
-        const folderPath = outputDirectory.split('/').slice(-2).join('/');
+        const folderPath = outputDirectory.split("/").slice(-2).join("/");
         const storagePath = `${folderPath}/${fileName}`;
 
         const uploadResult = await uploadToSupabaseTool.execute!(
@@ -132,7 +142,7 @@ export const generateSingleImageStep = createStep({
             contentType,
             isBase64: true,
           },
-          { requestContext, mastra }
+          { requestContext, mastra },
         );
 
         if (!uploadResult || !("success" in uploadResult)) {
@@ -141,7 +151,7 @@ export const generateSingleImageStep = createStep({
 
         if (!uploadResult.success || !uploadResult.publicUrl) {
           throw new Error(
-            `Failed to upload to Supabase: ${uploadResult.error || "Unknown error"}`
+            `Failed to upload to Supabase: ${uploadResult.error || "Unknown error"}`,
           );
         }
 
@@ -167,7 +177,7 @@ export const generateSingleImageStep = createStep({
     } catch (error) {
       console.error(
         `❌ Failed to generate/upload image for template ${templateId}:`,
-        error instanceof Error ? error.message : error
+        error instanceof Error ? error.message : error,
       );
       throw error;
     }

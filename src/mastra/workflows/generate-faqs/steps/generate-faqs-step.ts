@@ -4,6 +4,8 @@ import {
   generateFaqsInputSchema,
   faqItemSchema,
 } from "../../../schemas/faqs-types";
+import { resolveProduct } from "../../../brand/products";
+import { productBlock } from "../../../brand/prompt-blocks";
 
 /**
  * Step: Generate product-specific FAQs using OpenAI via Mastra agent
@@ -19,8 +21,10 @@ export const generateFaqsStep = createStep({
     totalFaqs: z.number(),
   }),
   execute: async ({ inputData, mastra }) => {
+    const product = resolveProduct(inputData);
+
     console.log(
-      `💬 Generating ${inputData.faqCount} FAQs for "${inputData.productTitle}"...`,
+      `💬 Generating ${inputData.faqCount} FAQs for "${product.title}"...`,
     );
 
     const agent = mastra?.getAgent("faqsAgent");
@@ -32,15 +36,16 @@ export const generateFaqsStep = createStep({
 
     const prompt = `Generate exactly ${inputData.faqCount} FAQs for the following product.
 
-PRODUCT: ${inputData.productTitle}
-DESCRIPTION: ${inputData.productDescription}
+${productBlock(product)}
 
 Requirements:
-- Use the product's short name naturally throughout (derive it from the title)
+- Use the product's short name naturally throughout
 - Questions must feel specific to this product, not generic
-- Cover a mix of: how to use, expected results, ingredients/safety, who it's for, what makes it different, shipping/returns
-- Answers should be concise (2–4 sentences), reassuring, and subtly persuasive
+- Cover the question mix from your instructions for a ${product.type === "digital" ? "DIGITAL product — access, lifetime use, what the certificate is and is not, refunds. Do NOT mention shipping or delivery" : "physical product — how it works, mask sizing by age, cleaning and reuse, materials, storage, shipping and returns"}
+- One FAQ must state plainly that this is an airway-clearance aid, not a substitute for professional medical care, and that emergency services should be called first
+- Answers are 2–4 sentences, plain language, accurate
 - Write in second person
+- Invent nothing: no statistics, ratings, review counts, certifications or testimonials
 
 Return ONLY a valid JSON array:
 [
@@ -56,7 +61,9 @@ Return ONLY a valid JSON array:
       throw new Error("Agent returned empty response");
     }
 
-    const jsonMatch = response.text.match(/```(?:json)?\s*(\[[\s\S]*?\])\s*```/);
+    const jsonMatch = response.text.match(
+      /```(?:json)?\s*(\[[\s\S]*?\])\s*```/,
+    );
     const jsonText = jsonMatch ? jsonMatch[1] : response.text.trim();
 
     let faqs;
@@ -74,7 +81,7 @@ Return ONLY a valid JSON array:
 
     return {
       originalInput: inputData,
-      productTitle: inputData.productTitle,
+      productTitle: product.title,
       faqs,
       totalFaqs: faqs.length,
     };

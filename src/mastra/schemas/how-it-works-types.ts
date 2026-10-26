@@ -1,19 +1,31 @@
 import { z } from "zod";
+import { PRODUCT_KEYS } from "../brand/products";
 
 // Workflow input
 export const generateHowItWorksInputSchema = z.object({
+  productKey: z
+    .enum(PRODUCT_KEYS)
+    .optional()
+    .describe(
+      'AtlasAir catalogue product — fills in title and description automatically. One of: "atlasair-2", "atlasair-plus", "first-aid-kit", "cpr-course".',
+    ),
+
   productTitle: z
     .string()
     .min(1)
     .max(100)
-    .describe('Product name (e.g., "CellRevive Serum", "GutBalance Pro")'),
+    .optional()
+    .describe(
+      'Product name (e.g., "AtlasAir 2.0"). Optional if productKey is set; overrides the preset when both are given.',
+    ),
 
   productDescription: z
     .string()
     .min(10)
     .max(10000)
+    .optional()
     .describe(
-      "Detailed product description. The more detail, the better the step content and visuals.",
+      "Detailed product description. The more detail, the better the step content and visuals. Optional if productKey is set.",
     ),
 
   stepCount: z
@@ -57,16 +69,18 @@ export const howItWorksStepSchema = z.object({
   stepLabel: z.string().describe('e.g. "Step 1"'),
   title: z
     .string()
-    .describe('Short powerful headline, e.g. "Reactivates Cellular Energy"'),
+    .describe(
+      'Short action title, e.g. "Call Emergency Services", "Pull In One Motion"',
+    ),
   description: z
     .string()
     .describe(
-      'Brief sentence, e.g. "Cells grow with renewed energy and youthful balance"',
+      'One clear sentence describing the action, e.g. "Place the mask over the mouth and nose to form a seal"',
     ),
   visualTheme: z
     .string()
     .describe(
-      'Scientific CGI background description, e.g. "mitochondria with glowing ATP particles on dark teal"',
+      'Calm instructional illustration description, e.g. "flat medical illustration of mask placement over mouth and nose on a light neutral background"',
     ),
 });
 

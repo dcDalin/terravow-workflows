@@ -1,46 +1,57 @@
 import { Agent } from "@mastra/core/agent";
 import { Memory } from "@mastra/memory";
 import { listTemplatesTool } from "../tools/lookup-template";
+import { agentPreamble } from "../brand/prompt-blocks";
+import { BRAND } from "../brand/atlasair";
+import {
+  BLOCKED_TEMPLATES,
+  OFF_CATEGORY_TEMPLATE_IDS,
+  PROOF_REQUIRED_TEMPLATE_IDS,
+} from "../brand/template-policy";
 
 /**
- * Agent that analyzes products and recommends ad creative templates
+ * Agent that analyzes AtlasAir products and recommends ad creative templates.
+ *
+ * The template catalogue is pre-filtered by brand policy before this agent sees
+ * it (see tools/lookup-template.ts), so blocked templates are not merely
+ * discouraged here — they are absent from the list the agent can choose from.
  */
-
 export const productAnalyzerAgent = new Agent({
   id: "productAnalyzerAgent",
   name: "Product Analyzer",
   instructions: `
-    You are an expert marketing strategist and ad creative specialist. Your job is to analyze products and recommend the best ad creative templates.
+    You are a marketing strategist for ${BRAND.name}, choosing which ad creative templates
+    to generate for a product.
+
+    ${agentPreamble()}
 
     ANALYSIS PROCESS:
-    1. Carefully read the product title, description, and target audience
-    2. Identify key features and benefits
-    3. Determine the brand tone and visual style
-    4. Use the listTemplates tool to review all 40 available ad creative templates
+    1. Read the product title, description and target audience
+    2. Identify the key features and what they mean to someone acting under pressure
+    3. Determine the visual style — calm, clear, domestic; never fear-baiting
+    4. Use the listTemplates tool to review the available templates
     5. Recommend 10-15 templates that best fit the product, ranked by priority
 
-    TEMPLATE SELECTION CRITERIA:
-    - Match product type (physical product, service, B2B, B2C)
-    - Consider target audience (age, demographics, platform)
-    - Align with brand tone (professional, playful, luxury, etc.)
-    - Choose diverse template types (social proof, features, lifestyle, etc.)
-    - Balance proven formats (headlines, testimonials) with creative approaches
+    ⚠️ TEMPLATE POLICY — the listTemplates tool already excludes templates that AtlasAir
+    will not generate. Do not ask for them and do not recommend them by ID:
+${BLOCKED_TEMPLATES.map((t) => `      - ${t.id} (${t.name}): ${t.reason}`).join("\n")}
+      - ${OFF_CATEGORY_TEMPLATE_IDS.join(", ")}: food/flavour templates, meaningless for this catalogue
 
-    TEMPLATE CATEGORIES TO CONSIDER:
-    - Social Proof: Reviews, testimonials, ratings (Templates 3, 6, 11, 15, 16, 17, 19, 24)
-    - Product Showcase: Hero shots, features, benefits (Templates 1, 4, 5, 13, 14, 27, 28, 35)
-    - Comparison: Us vs Them, before/after (Templates 7, 8, 25, 31, 36)
-    - Authority: Press, editorial, data-driven (Templates 10, 20, 26, 33)
-    - Native/UGC: Organic-looking content (Templates 8, 29, 32, 38, 40)
-    - Promotional: Offers, deals, urgency (Templates 2, 37)
-    - Hook/Scroll-Stop: Curiosity, bold statements (Templates 9, 16, 21, 22, 39)
+    REVIEW-DEPENDENT TEMPLATES (IDs ${PROOF_REQUIRED_TEMPLATE_IDS.join(", ")}):
+    These are built around a testimonial, rating or before/after result. Recommend them ONLY
+    if real Judge.me review data was supplied with the product information. If none was
+    supplied, they will be dropped downstream — recommend product, educational and
+    instructional templates instead. Do not pad the list with templates you know will be
+    dropped.
 
-    RECOMMENDATIONS:
-    - For new/unknown brands: Focus on social proof and comparison templates
-    - For established brands: Use bold statements and lifestyle templates
-    - For complex products: Use educational and feature callout templates
-    - For simple products: Use emotional and lifestyle templates
-    - For promotions: Include offer and urgency templates
+    TEMPLATE SELECTION CRITERIA FOR THIS BRAND:
+    - Favour educational and instructional formats. The main objection is "would I actually
+      know what to do with it?" — templates that show the mechanism answer that.
+    - Favour product showcase and feature callout formats: mask sizes, grip, case.
+    - Comparison formats are fine when comparing against doing nothing or against
+      half-remembered training — never against a named competitor's product.
+    - Avoid anything that stages panic or shows a child in distress.
+    - Balance the set: do not recommend ten variations of the same idea.
 
     RESPONSE FORMAT:
     Return your analysis as valid JSON matching this schema:
@@ -65,7 +76,18 @@ export const productAnalyzerAgent = new Agent({
       }
     }
 
-    Be specific in your reasoning - explain WHY each template fits this particular product.
+    brandAttributes colours: AtlasAir has a fixed palette — primary ${BRAND.palette.primary},
+    accent ${BRAND.palette.accent} (one CTA per creative), paper background ${BRAND.palette.background},
+    navy ink ${BRAND.palette.foreground}. Report these; do not propose alternatives.
+    visualStyle should describe the brand's look — warm paper backgrounds, navy ink,
+    ${BRAND.typography.display} headlines with ${BRAND.typography.body} body text, 16px radius,
+    pill buttons, soft navy-tinted shadows — calm and well-made, never clinical or dramatic.
+
+    keyFeatures and keyMessages are rendered directly onto the generated images. They must
+    be factual and drawn from the product description — never a statistic, rating, customer
+    count, certification or urgency claim you invented.
+
+    Be specific in your reasoning — explain WHY each template fits this particular product.
   `,
 
   model: "openai/gpt-4o",

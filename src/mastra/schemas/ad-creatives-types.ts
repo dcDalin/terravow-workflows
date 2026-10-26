@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { PRODUCT_KEYS } from "../brand/products";
 
 /**
  * Type definitions for Ad Creative Generation Workflow
@@ -13,28 +14,98 @@ export const imageInputSchema = z
 
 export type ImageInput = z.infer<typeof imageInputSchema>;
 
+/**
+ * Real social proof, supplied by a human from the store's Judge.me account.
+ *
+ * Nothing here has a default. If a field is absent the corresponding element is
+ * omitted from the creative rather than filled with a plausible-looking number —
+ * that is the whole point of the brand's honesty policy.
+ */
+export const socialProofSchema = z.object({
+  source: z
+    .literal("judge.me")
+    .default("judge.me")
+    .describe(
+      "Where the rating came from. Judge.me is the only accepted source.",
+    ),
+
+  ratingValue: z
+    .number()
+    .min(1)
+    .max(5)
+    .optional()
+    .describe(
+      "Real average star rating from Judge.me (e.g., 4.7). Never estimate this.",
+    ),
+
+  reviewCount: z
+    .number()
+    .int()
+    .min(0)
+    .optional()
+    .describe(
+      "Real number of reviews on Judge.me. Never round up or estimate.",
+    ),
+
+  quotes: z
+    .array(
+      z.object({
+        text: z
+          .string()
+          .describe(
+            "Verbatim review text, copied exactly. Do not edit or paraphrase.",
+          ),
+        name: z
+          .string()
+          .optional()
+          .describe("Reviewer name as it appears on Judge.me."),
+        verified: z
+          .boolean()
+          .default(false)
+          .describe("True only if Judge.me marks this as a verified purchase."),
+      }),
+    )
+    .optional()
+    .describe(
+      "Verbatim reviews. Only real ones — a creative with no quote is better than one with an invented quote.",
+    ),
+});
+
+export type SocialProof = z.infer<typeof socialProofSchema>;
+
 // Main workflow input schema
 export const generateAdCreativesInputSchema = z.object({
   // ========== PRODUCT INFO ==========
+  productKey: z
+    .enum(PRODUCT_KEYS)
+    .optional()
+    .describe(
+      'AtlasAir catalogue product. Fills in title and description automatically — the easiest way to run this workflow. One of: "atlasair-2", "atlasair-plus", "first-aid-kit", "cpr-course".',
+    ),
+
   productTitle: z
     .string()
     .min(1)
     .max(100)
-    .describe('Product name (e.g., "EcoBottle Pro", "FitTrack Watch")'),
+    .optional()
+    .describe(
+      'Product name (e.g., "AtlasAir 2.0"). Optional if productKey is set; overrides the preset when both are given.',
+    ),
 
   productDescription: z
     .string()
     .min(10)
     .max(10000)
+    .optional()
     .describe(
-      "Detailed product description highlighting key features and benefits",
+      "Detailed product description highlighting key features and benefits. Optional if productKey is set.",
     ),
 
   targetAudience: z
     .string()
     .optional()
     .describe(
-      'Target demographic (e.g., "fitness enthusiasts 25-40"). Leave empty for AI to determine.',
+      'Target demographic (e.g., "parents of children under 5"). Leave empty for AI to determine.',
     ),
 
   brandTone: z
@@ -75,7 +146,7 @@ export const generateAdCreativesInputSchema = z.object({
     })
     .optional()
     .describe(
-      "Brand color palette. Leave empty for AI to extract from logo/images.",
+      "Override the AtlasAir palette for this run. Leave empty to use the brand palette (primary #2477da, accent #ed512c, paper #fcfaf5, navy ink #22405f).",
     ),
 
   // ========== TEMPLATE SELECTION ==========
@@ -121,17 +192,22 @@ export const generateAdCreativesInputSchema = z.object({
   brandWebsite: z
     .string()
     .optional()
-    .describe('Brand website URL to display in creatives (e.g., "www.terravow.com")'),
+    .describe(
+      'Brand website URL to display in creatives (e.g., "atlasair.com")',
+    ),
 
   ctaText: z
     .string()
     .optional()
-    .describe('CTA button text (e.g., "SHOP NOW", "GET YOURS TODAY"). Defaults to "SHOP NOW".'),
+    .describe(
+      'CTA button text (e.g., "SHOP NOW", "GET YOURS TODAY"). Defaults to "SHOP NOW".',
+    ),
 
-  reviewCount: z
-    .string()
+  socialProof: socialProofSchema
     .optional()
-    .describe('Review count for social proof elements (e.g., "10,000+", "50,000+").'),
+    .describe(
+      "REAL Judge.me review data, copied from the store. Leave empty and no social-proof element is rendered at all — nothing is invented to fill the gap. Templates that need a review or rating are skipped when this is absent.",
+    ),
 
   outputDirectory: z
     .string()
@@ -214,7 +290,9 @@ export const creativeOutputSchema = z.object({
 
   imageUrl: z.string().optional(),
   imageData: z.string().optional(), // base64 if generated
-  localPath: z.string().describe("Path or public URL where the image was saved"),
+  localPath: z
+    .string()
+    .describe("Path or public URL where the image was saved"),
 
   prompt: z.string(),
   aspectRatio: z.string(),
@@ -236,7 +314,9 @@ export const workflowOutputSchema = z.object({
   success: z.boolean(),
   totalCreativesGenerated: z.number(),
   creatives: z.array(creativeOutputSchema),
-  outputDirectory: z.string().describe("Storage path or directory where files were saved"),
+  outputDirectory: z
+    .string()
+    .describe("Storage path or directory where files were saved"),
   manifestPath: z.string().describe("Path or public URL to the manifest.json"),
   summary: z.string(),
 });

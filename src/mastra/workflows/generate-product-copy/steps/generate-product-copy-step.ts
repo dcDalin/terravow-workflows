@@ -1,8 +1,8 @@
 import { createStep } from "@mastra/core/workflows";
 import { z } from "zod";
-import {
-  generateProductCopyInputSchema,
-} from "../../../schemas/product-copy-types";
+import { generateProductCopyInputSchema } from "../../../schemas/product-copy-types";
+import { resolveProduct } from "../../../brand/products";
+import { productBlock } from "../../../brand/prompt-blocks";
 
 const agentResponseSchema = z.object({
   title: z.string(),
@@ -13,7 +13,8 @@ const agentResponseSchema = z.object({
 
 export const generateProductCopyStep = createStep({
   id: "generate-product-copy",
-  description: "Generate story-driven product copy and guarantee section using AI",
+  description:
+    "Generate story-driven product copy and guarantee section using AI",
   inputSchema: generateProductCopyInputSchema,
   outputSchema: z.object({
     originalInput: generateProductCopyInputSchema,
@@ -24,7 +25,9 @@ export const generateProductCopyStep = createStep({
     guaranteeDescription: z.string(),
   }),
   execute: async ({ inputData, mastra }) => {
-    console.log(`✍️  Generating product copy for "${inputData.productTitle}"...`);
+    const product = resolveProduct(inputData);
+
+    console.log(`✍️  Generating product copy for "${product.title}"...`);
 
     const agent = mastra?.getAgent("productCopyAgent");
     if (!agent) {
@@ -33,13 +36,15 @@ export const generateProductCopyStep = createStep({
       );
     }
 
-    const prompt = `Write compelling product copy for the following product.
+    const prompt = `Write product copy for the following product.
 
-PRODUCT TITLE: ${inputData.productTitle}
-PRODUCT DESCRIPTION:
-${inputData.productDescription}
+${productBlock(product)}
 
-Follow all style principles from your instructions exactly.
+Follow all style principles from your instructions exactly. In particular:
+- Section C ("HOW IT WORKS") begins with calling emergency services.
+- Section G ("THE HONEST BIT") is mandatory and must never be omitted.
+- The guarantee section carries store policy and product facts ONLY. Do not invent a
+  customer count, star rating, statistic, certification or returns window.
 Return ONLY valid JSON:
 {
   "title": "...",
@@ -55,7 +60,9 @@ Return ONLY valid JSON:
     }
 
     // Strip optional JSON fences
-    const jsonMatch = response.text.match(/```(?:json)?\s*(\{[\s\S]*?\})\s*```/);
+    const jsonMatch = response.text.match(
+      /```(?:json)?\s*(\{[\s\S]*?\})\s*```/,
+    );
     const jsonText = jsonMatch ? jsonMatch[1] : response.text.trim();
 
     let parsed: z.infer<typeof agentResponseSchema>;
@@ -72,7 +79,7 @@ Return ONLY valid JSON:
 
     return {
       originalInput: inputData,
-      productTitle: inputData.productTitle,
+      productTitle: product.title,
       generatedTitle: parsed.title,
       generatedDescription: parsed.description,
       guaranteeTitle: parsed.guaranteeTitle,

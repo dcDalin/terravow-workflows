@@ -22,7 +22,7 @@ export const processImageInputTool = createTool({
     // Fetch image from URL with browser-like headers to avoid hotlink blocks
     const response = await fetch(input, {
       headers: {
-        "User-Agent": "Mozilla/5.0 (compatible; TerraVow/1.0)",
+        "User-Agent": "Mozilla/5.0 (compatible; AtlasAir/1.0)",
         "Accept": "image/webp,image/png,image/jpeg,image/*,*/*;q=0.8",
       },
     });

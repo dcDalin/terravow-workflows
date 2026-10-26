@@ -1,19 +1,19 @@
 import { createTool } from "@mastra/core/tools";
 import { z } from "zod";
-import { getSupabaseClient } from "../utils/supabase";
+import { getSupabaseClient, STORAGE_BUCKET } from "../utils/supabase";
 
 /**
  * Tool to upload files to Supabase Storage
- * Uploads to the TerraVow bucket and returns the public URL
+ * Uploads to the configured bucket (SUPABASE_BUCKET) and returns the public URL
  */
 export const uploadToSupabaseTool = createTool({
   id: "upload-to-supabase",
-  description: "Upload files to Supabase Storage in the TerraVow bucket",
+  description: `Upload files to Supabase Storage in the "${STORAGE_BUCKET}" bucket`,
   inputSchema: z.object({
     filePath: z
       .string()
       .describe(
-        "Path within the bucket (e.g., 'product-name/timestamp/filename.png')"
+        "Path within the bucket (e.g., 'product-name/timestamp/filename.png')",
       ),
     content: z
       .string()
@@ -21,7 +21,9 @@ export const uploadToSupabaseTool = createTool({
     contentType: z
       .string()
       .optional()
-      .describe("MIME type of the file (e.g., 'image/png', 'application/json')"),
+      .describe(
+        "MIME type of the file (e.g., 'image/png', 'application/json')",
+      ),
     isBase64: z
       .boolean()
       .default(true)
@@ -50,7 +52,7 @@ export const uploadToSupabaseTool = createTool({
 
       // Upload to Supabase Storage
       const { data, error } = await supabase.storage
-        .from("TerraVow")
+        .from(STORAGE_BUCKET)
         .upload(filePath, buffer, {
           contentType,
           upsert: true, // Allow overwriting if file exists
@@ -69,7 +71,7 @@ export const uploadToSupabaseTool = createTool({
       // Get public URL
       const {
         data: { publicUrl },
-      } = supabase.storage.from("TerraVow").getPublicUrl(filePath);
+      } = supabase.storage.from(STORAGE_BUCKET).getPublicUrl(filePath);
 
       console.log(`✅ Uploaded to Supabase: ${publicUrl}`);
 

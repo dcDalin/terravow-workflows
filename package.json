@@ -1,5 +1,5 @@
 {
-  "name": "terravow-workflows",
+  "name": "atlasair-workflows",
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
@@ -11,7 +11,7 @@
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "description": "",
+  "description": "Mastra content-generation workflows for the AtlasAir storefront — ad creatives, how-it-works illustrations, FAQs and product copy.",
   "type": "module",
   "engines": {
     "node": ">=22.13.0"

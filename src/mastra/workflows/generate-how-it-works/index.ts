@@ -7,34 +7,45 @@ import {
 import { generateHowItWorksStepsStep } from "./steps/generate-how-it-works-steps-step";
 import { generateHowItWorksImageStep } from "./steps/generate-how-it-works-image-step";
 import { saveHowItWorksStep } from "./steps/save-how-it-works-step";
+import { BRAND } from "../../brand/atlasair";
+import { resolveProduct } from "../../brand/products";
 
 const generateHowItWorksWorkflow = createWorkflow({
   id: "generate-how-it-works",
   description: `
-    🔬 How It Works Illustration Generator
+    🩺 How It Works Illustration Generator
 
-    Generates a series of scientific-style infographic images that explain how a product works —
-    similar to pharmaceutical ads showing cells, organs, molecules, and biological processes.
+    Generates the step-by-step illustration series that explains how an AtlasAir product is
+    used. These double as instructions — someone may recall them under pressure — so they are
+    calm, literal and clearly legible rather than dramatic.
 
     📋 QUICK START:
 
     {
-      "productTitle": "CellRevive Serum",
-      "productDescription": "A clinically-backed anti-aging serum that penetrates deep into the skin's cellular layers...",
+      "productKey": "atlasair-2",
       "stepCount": 4,
       "storageDestination": "supabase"
     }
 
+    Product keys: "atlasair-2" · "atlasair-plus" · "first-aid-kit" · "cpr-course"
+    (or pass productTitle + productDescription for anything not in the catalogue)
+
     🎯 HOW IT WORKS:
     1. AI reads your product info and generates step content (title, description, visual theme per step)
-    2. Each step is rendered as a dark, cinematic scientific illustration with text overlaid
+    2. Each step is rendered as a calm instructional illustration with text overlaid
     3. Images are saved locally or uploaded to Supabase Storage
 
+    ⚖️ FIXED RULES:
+    • Step 1 is ALWAYS "Call Emergency Services" — never reordered or softened
+    • Copy says "helps dislodge a blockage", never "removes the object"
+    • No invented statistics, countdowns or success rates
+
     🖼️ IMAGE STYLE:
-    • Dark navy / midnight teal backgrounds
-    • Photorealistic CGI biological visuals (cells, molecules, DNA, organs)
+    • Light, calm palette — soft neutrals and gentle domestic light
+    • Flat medical illustration of the airway and mask placement, or a calm household scene
     • Clean sans-serif text: step label (top), title (center), description (bottom)
-    • Premium pharmaceutical / nutraceutical ad aesthetic
+    • The visual language of a well-made first aid manual, not a pharmaceutical ad
+    • Never a child in distress, never dark biotech CGI
 
     📝 WORKFLOW STEPS:
     1. Generate Steps — AI produces step labels, titles, descriptions, and visual themes
@@ -59,24 +70,30 @@ const generateHowItWorksWorkflow = createWorkflow({
       `🎨 Preparing ${steps.length} image(s) for parallel generation...`,
     );
 
-    const sanitizedTitle = originalInput.productTitle
+    const product = resolveProduct(originalInput);
+    const sanitizedTitle = product.title
       .replace(/[^a-zA-Z0-9-_]/g, "-")
       .toLowerCase();
 
     const outputDirectory =
       originalInput.outputDirectory ||
-      resolve("/Users/dc_dalin/Desktop/TerraVowAssets", sanitizedTitle, String(Date.now()));
+      resolve(BRAND.assetRoot, sanitizedTitle, String(Date.now()));
 
     console.log(`📁 Output directory: ${outputDirectory}`);
 
     return steps.map((step) => ({
       ...step,
-      productTitle: originalInput.productTitle,
+      productTitle: product.title,
       aspectRatio: originalInput.aspectRatio ?? "1:1",
-      imageSize: (originalInput.imageSize ?? "2K") as "512" | "1K" | "2K" | "4K",
+      imageSize: (originalInput.imageSize ?? "2K") as
+        | "512"
+        | "1K"
+        | "2K"
+        | "4K",
       outputDirectory,
-      storageDestination: (originalInput.storageDestination ??
-        "supabase") as "supabase" | "local",
+      storageDestination: (originalInput.storageDestination ?? "supabase") as
+        | "supabase"
+        | "local",
     }));
   })
 

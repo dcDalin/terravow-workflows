@@ -5,9 +5,14 @@ import {
   howItWorksStepSchema,
   stepImageOutputSchema,
 } from "../../../schemas/how-it-works-types";
-import { generateImageGeminiTool } from "../../../tools/generate-image-gemini";
+import {
+  generateImageGeminiTool,
+  imageExtensionForMimeType,
+} from "../../../tools/generate-image-gemini";
 import { uploadToSupabaseTool } from "../../../tools/upload-to-supabase";
 import { writeFileTool } from "../../../tools/write-file";
+import { BRAND } from "../../../brand/atlasair";
+import { visualIdentityBlock } from "../../../brand/prompt-blocks";
 
 /**
  * Step 2 (foreach): Generate and save a single how-it-works illustration
@@ -16,12 +21,10 @@ import { writeFileTool } from "../../../tools/write-file";
 export const generateHowItWorksImageStep = createStep({
   id: "generate-how-it-works-image",
   description:
-    "Generate and save a single how-it-works scientific illustration using Gemini",
+    "Generate and save a single how-it-works instructional illustration using Gemini",
   inputSchema: howItWorksStepSchema.extend({
     productTitle: z.string(),
-    aspectRatio: z
-      .enum(["1:1", "9:16", "4:5", "3:4", "4:3"])
-      .default("1:1"),
+    aspectRatio: z.enum(["1:1", "9:16", "4:5", "3:4", "4:3"]).default("1:1"),
     imageSize: z.enum(["512", "1K", "2K", "4K"]).default("2K"),
     outputDirectory: z.string(),
     storageDestination: z.enum(["supabase", "local"]).default("supabase"),
@@ -43,36 +46,41 @@ export const generateHowItWorksImageStep = createStep({
 
     console.log(`🎨 Generating image for ${stepLabel}: "${title}"...`);
 
-    const prompt = `Create a high-converting, premium scientific infographic illustration for a health/wellness product advertisement. This image must make viewers feel hopeful, curious, and compelled to learn more about "${productTitle}".
+    const prompt = `Create a clear, calm instructional illustration for a step in the "How It Works" sequence for "${productTitle}", a home emergency-preparedness product from ${BRAND.name}.
 
-BACKGROUND VISUAL: ${visualTheme}. Deep navy, midnight teal, or dark indigo palette. Photorealistic CGI biological visualization — rich detail, bioluminescent glow, subtle particle systems, cinematic depth of field. The biological scene should look alive and active, conveying transformation and renewal happening right now. No background text or watermarks.
+THIS IMAGE IS AN INSTRUCTION FIRST AND AN ADVERT SECOND. Someone may look at it while frightened, or recall it months later under pressure. Clarity beats drama at every decision.
 
-PERSUASIVE DESIGN PRINCIPLES:
-- The biological imagery must feel aspirational — viewers should think "this is what's happening inside me when I use this product"
-- Use warm golden or amber accent lighting on key biological elements to suggest vitality, energy, and positive change
-- The overall mood should be: scientific credibility + emotional hope + premium quality
-- Composition should draw the eye from the step label → title → biology → description in a natural flow
+MAIN VISUAL: ${visualTheme}
+  - Either a clean flat medical illustration (uncluttered, clearly labelled shapes, readable at a glance) or a realistic calm domestic scene with gentle natural light
+  - Accurate and literal. Show the actual action being described, not a metaphor for it
+  - No background text or watermarks
 
-TEXT OVERLAYS — crisp, clean sans-serif typography:
+${visualIdentityBlock()}
+
+HARD PROHIBITIONS — these produce an unusable image:
+  - NO dark cinematic biotech aesthetic, glowing cells, mitochondria, DNA, molecules, particle systems or bioluminescence. This is not a supplement advert.
+  - NO child, infant or adult depicted in visible distress, panic or medical crisis. Show calm, competent, prepared action only.
+  - NO blood, no injury detail, no frightening imagery.
+  - NO invented text of any kind: no statistics, no percentages, no star ratings, no review counts, no certification badges, no medical logos, no "FDA approved", no countdown or urgency graphics. Render ONLY the text specified below.
+
+TEXT OVERLAYS — crisp, clean sans-serif typography, high contrast, immediately legible:
 
 TOP: "${stepLabel}"
-  - Small, wide-tracked uppercase, soft white or light teal, semi-transparent
+  - Small, wide-tracked uppercase, muted grey
   - Centered with generous top padding
 
 CENTER-TOP: "${title}"
-  - Large, bold, commanding white headline — the hero of the image
-  - Slight warm glow or subtle gradient to make it pop
-  - Should feel like a benefit promise, not just a label
+  - Large, bold, dark headline — clear and plain, not stylised
+  - This is the action the person takes
 
-CENTER: [the biological visualization — this is the emotional core of the image]
-  - The most visually striking element; should feel cinematic and awe-inspiring
+CENTER: [the instructional visual described above]
+  - The clearest element in the frame; a viewer should understand the action without reading
 
 BOTTOM: "${description}"
-  - Clean, readable white body text, slightly smaller
+  - Clean, readable dark body text, slightly smaller
   - Centered with bottom padding
-  - Reinforces the benefit shown in the biology above
 
-OVERALL STYLE: Think premium supplement or biotech brand — the visual language of brands like AG1, Viome, or Thorne. Dark, cinematic, scientific credibility with emotional warmth. Every element should say "this product works and it's worth it." All text clearly legible with subtle drop shadow or glow.`;
+OVERALL STYLE: The visual language of good safety instructions — calm, uncluttered, trustworthy, well-designed. Think a well-made first aid manual or airline safety card, not a pharmaceutical commercial. Every element should help someone act correctly under stress.`;
 
     const result = await generateImageGeminiTool.execute!(
       {
@@ -89,13 +97,9 @@ OVERALL STYLE: Think premium supplement or biotech brand — the visual language
 
     const timestamp = new Date().toISOString();
 
-    let fileExtension = "png";
-    let contentType = "image/png";
-    const mimeMatch = result.imageData.match(/^data:image\/(\w+);base64,/);
-    if (mimeMatch) {
-      fileExtension = mimeMatch[1];
-      contentType = `image/${fileExtension}`;
-    }
+    // Gemini returns raw base64; the format comes from its reported MIME type
+    const contentType = result.mimeType || "image/png";
+    const fileExtension = imageExtensionForMimeType(contentType);
 
     const sanitizedProduct = productTitle
       .replace(/[^a-zA-Z0-9-_]/g, "-")
@@ -116,11 +120,7 @@ OVERALL STYLE: Think premium supplement or biotech brand — the visual language
         { requestContext, mastra },
       );
 
-      if (
-        !writeResult ||
-        !("success" in writeResult) ||
-        !writeResult.success
-      ) {
+      if (!writeResult || !("success" in writeResult) || !writeResult.success) {
         const msg =
           writeResult && "message" in writeResult
             ? writeResult.message
