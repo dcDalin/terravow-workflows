@@ -40,6 +40,12 @@ Top-level files define how your Mastra project is configured, built, and connect
 | `package.json`        | Defines project metadata, dependencies, and available npm scripts.                                                |
 | `tsconfig.json`       | Configures TypeScript options such as path aliases, compiler settings, and build output.                          |
 
+## Documentation
+
+Team documentation lives in [`docs/`](docs/README.md). Read [`docs/architecture.md`](docs/architecture.md) for the workflow patterns this project follows, [`docs/brand-and-policy.md`](docs/brand-and-policy.md) before touching anything in `src/mastra/brand/`, and [`docs/known-issues.md`](docs/known-issues.md) for verified bugs.
+
+When you change a workflow's inputs, steps or outputs, update the matching `docs/workflows/*.md` page and the workflow's `description` string in the same change. When you fix a known issue, remove its entry from `docs/known-issues.md`.
+
 ## Boundaries
 
 ### Always do
@@ -47,6 +53,7 @@ Top-level files define how your Mastra project is configured, built, and connect
 - Load the `mastra` skill before any Mastra-related work
 - Register new agents, tools, workflows, and scorers in `src/mastra/index.ts`
 - Use schemas for tool inputs and outputs
+- Keep `docs/` in sync with workflow changes
 - Run `npm run build` to verify changes compile
 
 ### Never do
