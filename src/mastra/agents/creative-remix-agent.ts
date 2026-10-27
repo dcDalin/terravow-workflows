@@ -5,9 +5,8 @@ import { ALL_CLASSIFICATIONS } from "../brand/remix-policy";
  * Vision agent that reads an existing ad creative and describes its structure.
  *
  * Deliberately narrow: this agent OBSERVES and CLASSIFIES. It does not decide
- * what survives into the AtlasAir remix — that decision is made in code by
- * brand/remix-policy.ts, so the honesty rules cannot be talked out of by a model
- * having a creative moment.
+ * how each element carries into the AtlasAir remix — that decision is made in
+ * code by brand/remix-policy.ts.
  *
  * It is also not given the AtlasAir brand voice, precisely so it does not start
  * rewriting the source into AtlasAir copy while it is meant to be transcribing.
@@ -35,8 +34,8 @@ export const creativeRemixAgent = new Agent({
     Every piece of text in the image goes into textElements with its exact wording, including
     statistics, badge text, star ratings, review counts, testimonials and small print.
     Transcribe them verbatim even when — especially when — they look like marketing claims.
-    Downstream code needs to see them in order to strip them. A claim you skip is a claim
-    that can leak into the remix unnoticed. If text is partly illegible, transcribe what you
+    Downstream code needs to see them in order to rewrite them for the new brand. A claim
+    you skip is a claim of theirs that can leak into the remix. If text is partly illegible, transcribe what you
     can read and note that it is partial.
 
     CLASSIFY EVERY TEXT ELEMENT with exactly one of these values:

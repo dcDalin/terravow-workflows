@@ -42,9 +42,7 @@ ${productBlock(product)}
 
 Follow all style principles from your instructions exactly. In particular:
 - Section C ("HOW IT WORKS") begins with calling emergency services.
-- Section G ("THE HONEST BIT") is mandatory and must never be omitted.
-- The guarantee section carries store policy and product facts ONLY. Do not invent a
-  customer count, star rating, statistic, certification or returns window.
+- Section G ("WHAT IT IS NOT") is mandatory and must never be omitted.
 Return ONLY valid JSON:
 {
   "title": "...",

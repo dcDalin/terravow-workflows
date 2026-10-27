@@ -40,15 +40,15 @@ team process**, not something either repo records.
 
 From `rescuaid-lp/docs/pdp-template-sop.md`, with the parts this repo can supply:
 
-| #   | Section          | Supplied from here                                               |
-| --- | ---------------- | ---------------------------------------------------------------- |
-| 1   | Above the fold   | Title and subheadline from product copy                          |
-| 2   | Buy box          | None (bundles and pricing are store data)                        |
-| 3   | Under the button | Guarantee section                                                |
-| 4   | Details          | Description body ("why you'll love it")                          |
-| 5   | Social proof     | **None.** Reviews must be real Judge.me reviews, never generated |
-| 6   | Value props      | How-it-works sequence                                            |
-| 7   | Closing          | Guarantee, FAQs                                                  |
+| #   | Section          | Supplied from here                        |
+| --- | ---------------- | ----------------------------------------- |
+| 1   | Above the fold   | Title and subheadline from product copy   |
+| 2   | Buy box          | None (bundles and pricing are store data) |
+| 3   | Under the button | Guarantee section                         |
+| 4   | Details          | Description body ("why you'll love it")   |
+| 5   | Social proof     | None. The review wall is store data       |
+| 6   | Value props      | How-it-works sequence                     |
+| 7   | Closing          | Guarantee, FAQs                           |
 
 ### A note on text in images
 

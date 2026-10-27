@@ -84,8 +84,8 @@ That's 4 templates × 2 variations = 8 images.
 
 ### Ad creatives (you pick the templates)
 
-Browse the [template catalogue](ad-template-catalogue.md), which shows every template's ID, a
-sample image, and whether it's allowed.
+Browse the [template catalogue](ad-template-catalogue.md), which shows every template's ID and a
+sample image.
 
 ```json
 {
@@ -98,11 +98,11 @@ sample image, and whether it's allowed.
 }
 ```
 
-### Ad creatives with real reviews
+### Ad creatives with your Judge.me reviews
 
-Templates built around a rating or review only run when you give the workflow **real** Judge.me data.
-Copy it from the Judge.me dashboard exactly: the average rating, the review count and the review text
-word for word. Never estimate, round or tidy up.
+Every template can run without review data; Gemini writes the rating and review slots itself. To use
+the store's real figures instead, pass `socialProof` copied from the Judge.me dashboard: the average
+rating, the review count and the review text.
 
 ```json
 {
@@ -150,8 +150,6 @@ verified purchase.
 - **Add `productImages`** when ours looks different. Their product is replaced with ours.
 - **Re-host competitor ads before using them.** Download the ad and upload it to Supabase or Shopify
   first, because the original CDN URL often blocks the workflow.
-- **Check the stripped list.** After the run, `droppedElements` lists everything removed from the
-  source (stats, badges, reviews, urgency) and why.
 
 ## Finding your files
 
@@ -189,15 +187,9 @@ fails on setup, fix the setup before running it again.
 
 ## Check before publishing
 
-Code enforces some brand rules. Others are only instructions to the AI (see
-[Brand and policy](brand-and-policy.md#enforced-in-code-vs-prompt-only)). Read every asset for:
+The safety rules are instructions to the AI (see
+[Brand and policy](brand-and-policy.md#safety-rules)), so read every asset for:
 
-- [ ] **No invented numbers**: no statistics, survival or success rates, customer counts, ratings
-      or review counts, unless they're your real Judge.me figures.
-- [ ] **No invented people**: no testimonials, quotes, reviewer names or faces presented as
-      customers.
-- [ ] **No badges or endorsements**: no FDA/CE marks, "clinically proven", awards or press logos.
-- [ ] **No urgency**: no countdowns, "limited time", stock levels or discount bursts.
 - [ ] **Safety framing**: the airway-clearance-aid disclaimer is present and legible. Copy says
       "helps dislodge a blockage", and how-it-works starts with calling emergency services.
 - [ ] **No distress**: no child shown in visible distress, and no staged emergency.
@@ -206,7 +198,7 @@ Code enforces some brand rules. Others are only instructions to the AI (see
 - [ ] **Text in images**: AI-rendered text can contain typos. Read every word.
 - [ ] **Props and scenes**: templates 13, 18, 25, 27 and 35 were written for food brands, so check
       that no food ends up around the device. Template 14 shows several products in a gift box. See
-      the [catalogue](ad-template-catalogue.md#use-with-care).
+      the [catalogue](ad-template-catalogue.md#fit-notes).
 
 ## When something goes wrong
 
@@ -214,8 +206,6 @@ Code enforces some brand rules. Others are only instructions to the AI (see
 | -------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | `Provide either "productKey" … or both "productTitle" and "productDescription"`  | Add a `productKey`, or both title and description                                                                                                                                                                        |
 | `Failed to fetch image from URL (403)` / `Failed to fetch reference image (403)` | The image URL isn't public, or blocks servers. Re-upload it to Supabase and use that link                                                                                                                                |
-| `Template N is blocked by AtlasAir brand policy`                                 | That template isn't allowed. Pick another from the [catalogue](ad-template-catalogue.md)                                                                                                                                 |
-| `No templates remain after applying AtlasAir brand policy`                       | Everything you chose needs real reviews. Add `socialProof`, or pick "Allowed" templates                                                                                                                                  |
 | Your manual templates were ignored                                               | Set `"templateSelectionMode": "manual"`. Without it, `templateIds` is ignored                                                                                                                                            |
 | `GOOGLE_API_KEY …` / `Invalid GOOGLE_API_KEY`                                    | The Gemini key is missing or wrong in `.env`. Ask whoever runs the server                                                                                                                                                |
 | `Failed to upload to Supabase: …`                                                | Supabase settings, bucket name or permissions. Try `"storageDestination": "local"` to unblock                                                                                                                            |

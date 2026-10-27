@@ -10,13 +10,13 @@ accounts. [Landing pages](landing-pages.md) explains that handoff.
 
 ## The five workflows
 
-| Workflow                                             | Produces                                                                     | Models                                     | Lands in                                                  |
-| ---------------------------------------------------- | ---------------------------------------------------------------------------- | ------------------------------------------ | --------------------------------------------------------- |
-| [`generate-product-copy`](workflows/product-copy.md) | Product title, rich-text description, guarantee/store-policy section         | GPT-4o                                     | `product-copy.txt` on local disk                          |
-| [`generate-faqs`](workflows/faqs.md)                 | 3–20 product FAQs                                                            | GPT-4o                                     | `faqs.txt` on local disk                                  |
-| [`generate-how-it-works`](workflows/how-it-works.md) | A 4–8 image illustrated "how it works" sequence, text baked into each image  | GPT-4o → Gemini image                      | Supabase Storage (default) or local, plus `manifest.json` |
-| [`generate-ad-creatives`](workflows/ad-creatives.md) | Static ad creatives from a catalogue of 40 layout templates                  | GPT-4o picks templates → Gemini image      | Supabase Storage (default) or local, plus `manifest.json` |
-| [`remix-creative`](workflows/remix-creative.md)      | Another brand's ad _layout_ rebuilt as an AtlasAir ad, their claims stripped | GPT-4o vision → code policy → Gemini image | Supabase Storage (default) or local, plus `manifest.json` |
+| Workflow                                             | Produces                                                                    | Models                                           | Lands in                                                  |
+| ---------------------------------------------------- | --------------------------------------------------------------------------- | ------------------------------------------------ | --------------------------------------------------------- |
+| [`generate-product-copy`](workflows/product-copy.md) | Product title, rich-text description, guarantee/store-policy section        | GPT-4o                                           | `product-copy.txt` on local disk                          |
+| [`generate-faqs`](workflows/faqs.md)                 | 3–20 product FAQs                                                           | GPT-4o                                           | `faqs.txt` on local disk                                  |
+| [`generate-how-it-works`](workflows/how-it-works.md) | A 4–8 image illustrated "how it works" sequence, text baked into each image | GPT-4o → Gemini image                            | Supabase Storage (default) or local, plus `manifest.json` |
+| [`generate-ad-creatives`](workflows/ad-creatives.md) | Static ad creatives from a catalogue of 40 layout templates                 | GPT-4o picks templates → Gemini image            | Supabase Storage (default) or local, plus `manifest.json` |
+| [`remix-creative`](workflows/remix-creative.md)      | Another brand's ad _layout_ rebuilt as an AtlasAir ad, their copy rewritten | GPT-4o vision → code element plan → Gemini image | Supabase Storage (default) or local, plus `manifest.json` |
 
 GPT-4o is called as `openai/gpt-4o` through Mastra's model router. Every image comes from
 `gemini-3.1-flash-image-preview`, called directly with the `@google/genai` SDK.
@@ -26,9 +26,9 @@ GPT-4o is called as `openai/gpt-4o` through Mastra's model router. Every image c
 ```mermaid
 flowchart TD
   input["Run input<br/>(productKey, images, options)"] --> resolve["resolveProduct()<br/>catalogue preset or ad-hoc product"]
-  resolve --> agent["GPT-4o agent<br/>(brand + safety + honesty preamble)"]
-  agent --> policy["Brand policy in code<br/>(template / remix rules)"]
-  policy --> gemini["Gemini image model<br/>(one call per image)"]
+  resolve --> agent["GPT-4o agent<br/>(brand + safety preamble)"]
+  agent --> prompts["Image prompts built in code<br/>(templates / remix element plan)"]
+  prompts --> gemini["Gemini image model<br/>(one call per image)"]
   agent --> text["Text output<br/>(.txt on local disk)"]
   gemini --> store["Supabase Storage<br/>or local folder"]
   store --> manifest["manifest.json"]
@@ -41,12 +41,12 @@ Every workflow follows the same shape:
 1. **Resolve the product.** `productKey` picks a product from the catalogue in
    [`brand/products.ts`](../src/mastra/brand/products.ts). Alternatively, `productTitle` +
    `productDescription` describe something that isn't in it.
-2. **Ask an agent for structured content.** Each agent's instructions open with the same brand,
-   safety and honesty preamble from [`brand/prompt-blocks.ts`](../src/mastra/brand/prompt-blocks.ts).
+2. **Ask an agent for structured content.** Each agent's instructions open with the same brand and
+   safety preamble from [`brand/prompt-blocks.ts`](../src/mastra/brand/prompt-blocks.ts).
    The agent returns JSON, and the step validates it with zod.
-3. **Apply brand policy** (image workflows only). Code, not the model, decides which ad templates may
-   be used and which elements of a competitor's ad survive a remix. See
-   [Brand and policy](brand-and-policy.md).
+3. **Build the image prompts** (image workflows only). Code fills each ad template's placeholders
+   with the product and run data. For a remix, it plans how each element of the competitor's ad is
+   kept or rewritten. See [Brand and policy](brand-and-policy.md).
 4. **Render images.** A `.foreach` step renders up to 3 images at a time and saves each one right
    after it's generated.
 5. **Save.** Text workflows write a `.txt`. Image workflows write a `manifest.json` that records
@@ -59,7 +59,7 @@ Every workflow follows the same shape:
 | [`src/mastra/index.ts`](../src/mastra/index.ts)                                                 | Registers workflows, agents and tools; sets up storage and observability            |
 | [`src/mastra/workflows/<name>/`](../src/mastra/workflows/)                                      | One folder per workflow: `index.ts` wires the steps, `steps/` holds them            |
 | [`src/mastra/agents/`](../src/mastra/agents/)                                                   | The five GPT-4o agents                                                              |
-| [`src/mastra/brand/`](../src/mastra/brand/)                                                     | Brand constants, product catalogue, shared prompt blocks, policy rules              |
+| [`src/mastra/brand/`](../src/mastra/brand/)                                                     | Brand constants, product catalogue, shared prompt blocks, remix element policy      |
 | [`src/mastra/schemas/`](../src/mastra/schemas/)                                                 | Zod input/output schemas, one file per workflow                                     |
 | [`src/mastra/tools/`](../src/mastra/tools/)                                                     | Gemini image generation, image fetch, file write, Supabase upload, template listing |
 | [`src/mastra/utils/prompt-creative-mapping.ts`](../src/mastra/utils/prompt-creative-mapping.ts) | The 40 ad-creative templates                                                        |
@@ -79,12 +79,10 @@ Every workflow follows the same shape:
   [Getting started](getting-started.md#environment-variables).
 - **Manifest**: the `manifest.json` written next to the images of a run, listing every file and
   its prompt and timing, plus the full run input.
-- **Proof-gated template**: an ad template built around a rating, review or testimonial. It only runs
-  when you supply real Judge.me data in `socialProof`.
-- **Blocked template**: a template whose premise is deceptive, such as a faux press screenshot.
-  These never run.
+- **`socialProof`**: optional Judge.me data (rating, review count, a review). When supplied, it fills
+  rating and review slots. Otherwise the image model writes them.
 - **Rebrand / replace** (remix only): with no `productImages`, the competitor's product is kept and
   only its markings change (rebrand). With `productImages`, their product is swapped for yours
   (replace).
-- **Element plan** (remix only): the per-text-element keep/replace/drop decision, with a reason for
+- **Element plan** (remix only): the per-text-element keep/replace decision, with a reason for
   each, recorded in the output and manifest.

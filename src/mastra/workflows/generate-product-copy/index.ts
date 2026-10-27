@@ -15,8 +15,8 @@ const generateProductCopyWorkflow = createWorkflow({
 
     Generates an AtlasAir product title and Shopify-ready rich text description. The copy
     sells preparedness for a 30-second window, not fear: how the product works, what the
-    design does under pressure, who in the household can use it, and an honest closing
-    section about what it is not.
+    design does under pressure, who in the household can use it, and a closing section about
+    what it is not.
 
     📋 QUICK START:
 
@@ -31,9 +31,7 @@ const generateProductCopyWorkflow = createWorkflow({
     • "How it works" begins with calling emergency services
     • A mandatory closing section states this is an airway-clearance aid, not a substitute
       for professional medical care
-    • The guarantee section carries store policy and product facts ONLY — no invented
-      customer counts, ratings, statistics, certifications or returns windows. Put your real
-      returns policy in productDescription if you want it reflected there
+    • The guarantee section uses the returns window in productDescription if there is one
 
     📝 OUTPUT:
     - generatedTitle: Rewritten headline (paste into Shopify product title or page hero)

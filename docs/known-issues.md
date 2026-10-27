@@ -8,29 +8,18 @@ delete its entry and update any docs page that links to it.
 
 ### Some templates were written for other brands
 
-The template catalogue came from food, supplement and apparel brands. Three things have already been
-cleaned up:
-
-- **Truth-bearing placeholders.** Stats, prices, promos, reviews, reviewer details, endorsements,
-  competitor claims and before/after results are now filled from real input or left empty, in
-  `customize-prompts-step.ts`.
-- **Literal instructions to render invented content.** Templates 6, 11, 13, 16, 17, 18, 19 and 26 no
-  longer ask for star rows, press logos, made-up review text, reviewer headshots or statistics.
-- **Native and UGC formats.** Templates 8, 20, 29 and 32 presented an invented person, social post or
-  Story as organic third-party content. They are now in `BLOCKED_TEMPLATES`, alongside 15, 24 and 34,
-  which were blocked for the same reason.
-
-What remains is the layouts themselves:
+The template catalogue came from food, supplement and apparel brands. Slots the run doesn't supply are
+filled by the image model, guided by each template's own examples, so some layouts fit poorly:
 
 - **Food and lifestyle props:** 13, 18, 25, 27 and 35 leave slots like `[FLAVOR PROPS]`,
   `[SCATTERED ELEMENTS]` and `[FLATLAY PROPS]` to the model, and the template examples are food. Food
   scattered around a choking-rescue device is a poor look.
-- **Bundle layout:** 14 shows several products in a gift box, and its `[NUMBER]` slots are unmapped.
-- **Star graphics:** the review templates (11, 16, 17, 38) always draw five stars, whatever the real
-  rating.
-- **Fix:** decide per template whether to rewrite its layout text or block it. That is a
-  brand-policy call. Edit the lists in [`brand/template-policy.ts`](../src/mastra/brand/template-policy.ts) or the
-  template text in [`utils/prompt-creative-mapping.ts`](../src/mastra/utils/prompt-creative-mapping.ts).
+- **Off-category:** 22 is a "tastes like" flavour ad. The AI analyst is told to skip
+  other-category templates, but nothing stops it being chosen.
+- **Bundle layout:** 14 shows several products in a gift box.
+- **Fix:** rewrite the layout text in
+  [`utils/prompt-creative-mapping.ts`](../src/mastra/utils/prompt-creative-mapping.ts) for the
+  templates you use, or map their prop slots to AtlasAir scenes in `customize-prompts-step.ts`.
 
 ### Remix scope text contradicts rebrand mode
 
@@ -43,14 +32,13 @@ It is appended to **every** remix prompt and written to the manifest. In rebrand
 - **Fix:** give `REMIX_SCOPE` a rebrand variant, or build the scope lines per mode in
   `buildRemixPrompt()`.
 
-### Honesty rules in the text workflows are prompt-only
+### Safety rules and counts in the text workflows are prompt-only
 
-For product copy, FAQs and how-it-works, the rules exist only in the agent instructions:
+For product copy, FAQs and how-it-works, the safety rules exist only in the agent instructions:
 
-- no invented numbers
 - the "what it is not" FAQ
 - step 1 = call emergency services
-- the honest closing section
+- the closing "what it is not" section of the product copy
 
 Nothing in code checks the output. `faqCount` and `stepCount` aren't checked either: the run returns
 whatever count the model produced, and zero steps gives a "successful" empty run.
@@ -58,7 +46,6 @@ whatever count the model produced, and zero steps gives a "successful" empty run
 - **Fix ideas:**
   - Validate counts with zod `.length()`.
   - Assert that step 1's title mentions emergency services.
-  - Scan text for digits, `%` and "stars" before saving.
 
 ### `brandWebsite` does nothing in ad creatives
 
@@ -80,7 +67,7 @@ it does, images are 4K; otherwise they're 2K. The model is always `gemini-3.1-fl
 - **Choking-device copy goes on every product.** These are applied to the first aid kit and the CPR
   course as well as the devices:
   - the choking-device disclaimer ("AtlasAir devices are airway-clearance aids…")
-  - the "being unprepared" comparison and before/after copy
+  - the "empty drawer → ready to use" before/after copy
   - the calm-mealtime scene used for template 39's problem visual
 
 ## Cost and reliability

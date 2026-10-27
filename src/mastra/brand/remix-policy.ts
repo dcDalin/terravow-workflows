@@ -1,15 +1,9 @@
 /**
- * What may and may not carry across when an AtlasAir creative is built from the
- * structure of another brand's ad.
+ * How each text element of another brand's ad carries into an AtlasAir remix.
  *
- * A competitor ad for this category is dense with things AtlasAir will not say:
- * lives-saved counters, testimonials, medical-endorsement badges, "as seen on"
- * strips. Remixing an ad by "swapping the logo" would inherit all of it and
- * silently undo the honesty policy the rest of this project enforces.
- *
- * So the decision about each element is made HERE, in code, from a
- * classification the vision agent produces. The agent observes; it does not get
- * to decide what survives.
+ * The vision agent classifies every text element it finds; this table decides
+ * whether the element is kept as generic format wording or rewritten as
+ * AtlasAir content. Nothing is copied verbatim from the source brand.
  */
 
 export type ElementClassification =
@@ -32,24 +26,17 @@ export type ElementClassification =
   /** Structural or instructional label: "How it works", "Step 1", "What's included". */
   | "structural-label";
 
-export type ElementAction = "keep" | "replace" | "drop";
+export type ElementAction = "keep" | "replace";
 
 export interface ElementDecision {
   action: ElementAction;
-  /** Shown in the run log and written into the manifest for auditability. */
+  /** Shown in the run log and written into the manifest. */
   reason: string;
 }
 
-/**
- * The policy table.
- *
- * `hasRealProof` only ever unlocks social proof — and even then the element is
- * REPLACED with AtlasAir's own Judge.me figures, never carried over from the
- * source. Another brand's reviews are never AtlasAir's reviews.
- */
+/** The decision table. */
 export function decideElement(
   classification: ElementClassification,
-  options: { hasRealProof: boolean },
 ): ElementDecision {
   switch (classification) {
     case "brand-mark":
@@ -60,54 +47,42 @@ export function decideElement(
       };
 
     case "product-claim":
-      // Not carried over even when it sounds generic: a claim that is true of
-      // their device is not automatically true of ours (mask counts, age ranges
-      // and materials differ per SKU).
+      // A claim about their device is rewritten from ours: mask counts, age
+      // ranges and materials differ per SKU.
       return {
         action: "replace",
-        reason:
-          "Claim rewritten from the AtlasAir product description — source claims are never assumed true of AtlasAir products.",
+        reason: "Claim rewritten from the AtlasAir product description.",
       };
 
     case "statistic":
       return {
-        action: "drop",
-        reason:
-          "AtlasAir publishes no lives-saved, success-rate or units-sold figures, and will not inherit another brand's.",
+        action: "replace",
+        reason: "Statistic rewritten as the AtlasAir equivalent.",
       };
 
     case "social-proof":
-      return options.hasRealProof
-        ? {
-            action: "replace",
-            reason:
-              "Replaced with AtlasAir's real Judge.me rating and verbatim review supplied on this run.",
-          }
-        : {
-            action: "drop",
-            reason:
-              "No real Judge.me data supplied on this run, so the social-proof element is removed rather than reproduced.",
-          };
+      return {
+        action: "replace",
+        reason:
+          "Social proof rewritten for AtlasAir, using the Judge.me data supplied on this run when there is any.",
+      };
 
     case "certification-badge":
       return {
-        action: "drop",
-        reason:
-          "Certifications, endorsements, awards and press marks are never rendered unless genuinely earned. Never inherited.",
+        action: "replace",
+        reason: "Badge rewritten as the AtlasAir equivalent.",
       };
 
     case "urgency":
       return {
-        action: "drop",
-        reason:
-          "AtlasAir runs no countdowns, stock counters or manufactured scarcity.",
+        action: "replace",
+        reason: "Offer or urgency line rewritten as the AtlasAir equivalent.",
       };
 
     case "competitor-comparison":
       return {
-        action: "drop",
-        reason:
-          "AtlasAir does not run named or implied comparisons against other brands.",
+        action: "replace",
+        reason: "Comparison rewritten with AtlasAir as the brand that wins.",
       };
 
     case "cta":
@@ -155,9 +130,8 @@ export const REMIX_SCOPE = {
   ],
   neverTakes: [
     "Their photography, illustration or artwork — every visual is regenerated from AtlasAir reference images",
-    "Their headline, body copy or any verbatim wording",
+    "Their headline, body copy or any verbatim wording, including statistics, reviews and badges, which are rewritten for AtlasAir",
     "Their logo, wordmark, colours, typefaces or brand styling",
-    "Their statistics, reviews, testimonials, badges, endorsements or urgency devices",
     "Any depiction of their product",
   ],
 } as const;

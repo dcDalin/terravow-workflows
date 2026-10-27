@@ -4,13 +4,9 @@ Generates static ad creatives from a catalogue of 40 layout templates (headline 
 checklists, comparison grids, review cards and so on). The templates are chosen by an AI analyst or
 by hand. Each creative is rendered by Gemini using your logo and product photos as reference images.
 
-Brand policy is enforced **in code** here:
-
-- Deceptive templates are blocked.
-- Review-dependent templates only run with real Judge.me data.
-- Every prompt ends with a "never invent" rule block.
-
-See [Brand and policy](../brand-and-policy.md).
+Every template can run. Placeholders the run supplies are filled in code: product, features, CTA,
+colours, and Judge.me data when given. Gemini fills the rest from context. Every creative carries the
+safety disclaimer.
 
 **Use it for:** paid-social creatives. These go to ad platforms, not product pages.
 
@@ -29,7 +25,7 @@ AI picks five templates:
 }
 ```
 
-You pick the templates, with real reviews unlocking the proof-gated ones:
+You pick the templates, with Judge.me figures for the review slots:
 
 ```json
 {
@@ -52,41 +48,40 @@ You pick the templates, with real reviews unlocking the proof-gated ones:
 }
 ```
 
-Only enter Judge.me figures you have copied from the store. The [template catalogue](../ad-template-catalogue.md)
-lists every ID and whether it is allowed.
+The [template catalogue](../ad-template-catalogue.md) lists every ID with a sample image.
 
 ## Inputs
 
 Schema: `generateAdCreativesInputSchema` in
 [`schemas/ad-creatives-types.ts`](../../src/mastra/schemas/ad-creatives-types.ts).
 
-| Field                   | Type                                                                         | Default                            | Effect                                                                                                                                      |
-| ----------------------- | ---------------------------------------------------------------------------- | ---------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------- |
-| `productKey`            | catalogue key                                                                | —                                  | Fills in the product                                                                                                                        |
-| `productTitle`          | string, 1–100                                                                | —                                  | Overrides the preset title                                                                                                                  |
-| `productDescription`    | string, 10–10,000                                                            | —                                  | Replaces the generated description                                                                                                          |
-| `logo`                  | URL, **required**                                                            | —                                  | Sent to Gemini as reference image 1                                                                                                         |
-| `productImages`         | 1–10 URLs, **required**                                                      | —                                  | Sent to Gemini after the logo (14 reference images max)                                                                                     |
-| `targetAudience`        | string                                                                       | AI decides                         | Passed to the analyst agent                                                                                                                 |
-| `brandTone`             | `professional` \| `playful` \| `luxury` \| `minimal` \| `bold` \| `friendly` | AI decides                         | Passed to the analyst agent                                                                                                                 |
-| `brandColors`           | `{ primary, secondary?, accent? }`, `#RRGGBB`                                | AtlasAir palette                   | Overrides colours in the prompt for this run                                                                                                |
-| `templateSelectionMode` | `"ai"` \| `"manual"`                                                         | `"ai"`                             | Who picks templates                                                                                                                         |
-| `templateIds`           | integers 1–40                                                                | —                                  | Used only when mode is `manual` **and** the list is non-empty. Otherwise the run silently falls back to AI selection                        |
-| `aiSelectTemplateCount` | integer 1–20                                                                 | `5`                                | How many templates the AI branch keeps, after policy filtering                                                                              |
-| `creativesPerTemplate`  | integer 1–10                                                                 | `1`                                | Variations per template. Variation 2 onward gets a "slight creative differences" instruction                                                |
-| `ctaText`               | string                                                                       | `"SHOP NOW"`                       | Fills `[CTA]`                                                                                                                               |
-| `socialProof`           | `{ ratingValue?, reviewCount?, quotes? }`                                    | —                                  | Real Judge.me data. Unlocks proof-gated templates and fills rating/quote slots. See [Brand and policy](../brand-and-policy.md#social-proof) |
-| `imageGenerationModel`  | string                                                                       | —                                  | **Misnamed.** It doesn't choose a model. A value containing `"4K"` makes images 4K, anything else gives 2K                                  |
-| `brandWebsite`          | string                                                                       | —                                  | **Currently has no effect.** No template uses the `[WEBSITE]` placeholder it fills                                                          |
-| `outputDirectory`       | string                                                                       | `<asset root>/<title>/<timestamp>` | Local folder. Supabase uses its last two segments                                                                                           |
-| `storageDestination`    | `"supabase"` \| `"local"`                                                    | `"supabase"`                       | Where files go                                                                                                                              |
+| Field                   | Type                                                                         | Default                            | Effect                                                                                                               |
+| ----------------------- | ---------------------------------------------------------------------------- | ---------------------------------- | -------------------------------------------------------------------------------------------------------------------- |
+| `productKey`            | catalogue key                                                                | —                                  | Fills in the product                                                                                                 |
+| `productTitle`          | string, 1–100                                                                | —                                  | Overrides the preset title                                                                                           |
+| `productDescription`    | string, 10–10,000                                                            | —                                  | Replaces the generated description                                                                                   |
+| `logo`                  | URL, **required**                                                            | —                                  | Sent to Gemini as reference image 1                                                                                  |
+| `productImages`         | 1–10 URLs, **required**                                                      | —                                  | Sent to Gemini after the logo (14 reference images max)                                                              |
+| `targetAudience`        | string                                                                       | AI decides                         | Passed to the analyst agent                                                                                          |
+| `brandTone`             | `professional` \| `playful` \| `luxury` \| `minimal` \| `bold` \| `friendly` | AI decides                         | Passed to the analyst agent                                                                                          |
+| `brandColors`           | `{ primary, secondary?, accent? }`, `#RRGGBB`                                | AtlasAir palette                   | Overrides colours in the prompt for this run                                                                         |
+| `templateSelectionMode` | `"ai"` \| `"manual"`                                                         | `"ai"`                             | Who picks templates                                                                                                  |
+| `templateIds`           | integers 1–40                                                                | —                                  | Used only when mode is `manual` **and** the list is non-empty. Otherwise the run silently falls back to AI selection |
+| `aiSelectTemplateCount` | integer 1–20                                                                 | `5`                                | How many of the analyst's recommendations to use, highest priority first                                             |
+| `creativesPerTemplate`  | integer 1–10                                                                 | `1`                                | Variations per template. Variation 2 onward gets a "slight creative differences" instruction                         |
+| `ctaText`               | string                                                                       | `"SHOP NOW"`                       | Fills `[CTA]`                                                                                                        |
+| `socialProof`           | `{ ratingValue?, reviewCount?, quotes? }`                                    | —                                  | Optional Judge.me data for the rating and review slots. See [Brand and policy](../brand-and-policy.md#social-proof)  |
+| `imageGenerationModel`  | string                                                                       | —                                  | **Misnamed.** It doesn't choose a model. A value containing `"4K"` makes images 4K, anything else gives 2K           |
+| `brandWebsite`          | string                                                                       | —                                  | **Currently has no effect.** No template uses the `[WEBSITE]` placeholder it fills                                   |
+| `outputDirectory`       | string                                                                       | `<asset root>/<title>/<timestamp>` | Local folder. Supabase uses its last two segments                                                                    |
+| `storageDestination`    | `"supabase"` \| `"local"`                                                    | `"supabase"`                       | Where files go                                                                                                       |
 
 ## Steps
 
 ```mermaid
 flowchart TD
   A["process-assets<br/>fetch logo + product images"] --> B["analyze-product<br/>productAnalyzerAgent (GPT-4o)<br/>+ listTemplates tool"]
-  B --> C["prepare-generation-tasks<br/>pick templates, apply template policy"]
+  B --> C["prepare-generation-tasks<br/>pick templates"]
   C --> D["customize-prompts<br/>fill placeholders, append brand + rules"]
   D --> E["verify-gemini-key<br/>models.list()"]
   E --> F[".map<br/>one item per creative"]
@@ -105,47 +100,46 @@ flowchart TD
    - **Asks** `productAnalyzerAgent` ([agent](../../src/mastra/agents/product-analyzer-agent.ts),
      `openai/gpt-4o`) to analyse the product and recommend 10–15 templates.
    - **Template list:** the agent calls its `listTemplates` tool
-     ([tool](../../src/mastra/tools/lookup-template.ts)). The tool already hides blocked and
-     off-category templates.
-   - **Proof flag:** the prompt says whether real Judge.me data was supplied, so the agent doesn't
-     recommend review templates that would be dropped.
+     ([tool](../../src/mastra/tools/lookup-template.ts)), which lists all 40 templates. Its
+     instructions favour educational, showcase and feature-callout formats. They also tell it to skip
+     templates built for a different category and layouts that stage panic.
    - **Output:** `{ keyFeatures, keyMessages, targetAudience, brandTone, visualStyle,
 recommendedTemplates[{ templateId, priority, reasoning }], brandAttributes }`.
    - **Always runs**, even in manual mode, because `keyMessages` and `keyFeatures` feed the
      placeholders.
 3. **`prepare-generation-tasks`** ([step](../../src/mastra/workflows/generate-ad-creatives/steps/prepare-generation-tasks-step.ts))
-   - **Manual mode:** calls `filterTemplates(ids, { strict: true })`.
-     - Blocked or off-category IDs **throw**.
-     - Proof-gated IDs without `socialProof` are skipped with a warning.
-   - **AI mode:** sorts recommendations high → medium → low, filters them by policy, **then** keeps the
-     first `aiSelectTemplateCount`.
+   - **Manual mode:** uses `templateIds` as given.
+   - **AI mode:** sorts recommendations high → medium → low and keeps the first
+     `aiSelectTemplateCount`.
    - **Tasks:** creates one task per template × `creativesPerTemplate`. Each task takes the
-     template's own aspect ratio (1:1, 4:5 or 9:16).
+     template's own aspect ratio (1:1, 4:5 or 9:16). Unknown IDs are skipped with a warning.
 4. **`customize-prompts`** ([step](../../src/mastra/workflows/generate-ad-creatives/steps/customize-prompts-step.ts)).
    Starts from each template's `promptText`, then:
    - **Replaces placeholders** from a fixed map. Each key matches its exact form, `[KEY]`, and the
      same key followed by an example or description: `[KEY — e.g. …]`, `[KEY — the most…]`,
      `[KEY, 3-5 sentences]`, `[KEY like …]`. When a key has a list of values, repeated slots take
-     the values in order, as in the rows of a comparison grid. The values come from these sources:
+     the values in order. The values come from these sources:
 
-     | Placeholders                                                                                                                          | Source                                                                                       |
-     | ------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------- |
-     | Headline / subheadline / hook slots                                                                                                   | `analysis.keyMessages`, falling back to the product title and the brand tagline              |
-     | Benefit / callout / strength / icon-label slots                                                                                       | `analysis.keyFeatures`, falling back to the catalogue features                               |
-     | Stat slots (`[STAT 1]`…)                                                                                                              | The same features, not numbers. Their paired `[LABEL]` slots are **empty**                   |
-     | `[CTA]`                                                                                                                               | `ctaText`, else `"SHOP NOW"`                                                                 |
-     | Colour slots                                                                                                                          | The palette, or your `brandColors`                                                           |
-     | Rating, quote, reviewer and verified slots                                                                                            | `socialProof` only (the **verbatim** first quote), otherwise **empty**                       |
-     | Comparison and before/after slots                                                                                                     | Compare against "being unprepared" and show preparation, never a competitor or a body result |
-     | Press quotes, offers, promos, prices, trust badges, endorsements, handles, helpful-vote counts, post metrics, colourway/variant slots | Always **empty**                                                                             |
-     | `[DISCLAIMER]`                                                                                                                        | The brand safety disclaimer                                                                  |
+     | Placeholders                                                                 | Source                                                                          |
+     | ---------------------------------------------------------------------------- | ------------------------------------------------------------------------------- |
+     | Headline / subheadline slots                                                 | `analysis.keyMessages`, falling back to the product title and the brand tagline |
+     | Benefit / callout / strength / icon-label slots, comparison "advantage" rows | `analysis.keyFeatures`, falling back to the catalogue features                  |
+     | `[CTA]`                                                                      | `ctaText`, else `"SHOP NOW"`                                                    |
+     | Colour slots                                                                 | The palette, or your `brandColors`                                              |
+     | Rating, quote, reviewer and verified slots                                   | `socialProof`, when supplied                                                    |
+     | `[DISCLAIMER]`                                                               | The brand safety disclaimer                                                     |
+     | Before/after and `[PROBLEM VISUAL]` slots                                    | A calm preparation scene, never a person in distress                            |
+
+     **Everything else is left in brackets for Gemini.** That covers stats, prices, offers, trust
+     badges, competitor names and reviews when there's no `socialProof`.
 
    - **Appends the brand visual identity block.**
    - **Appends the ABSOLUTE RULES block:**
      - Never render brackets.
-     - Omit any element whose placeholder is empty.
-     - Never invent ratings, reviews, names, certifications, urgency or statistics.
-     - Render the safety disclaimer as small print.
+     - Replace every remaining placeholder with realistic, product-appropriate content. Write the
+       equivalent for this product, never the "e.g." example from another category.
+     - Render the safety disclaimer as small print. Never show a child in distress or imply a
+       guaranteed medical outcome.
 
 5. **`verify-gemini-key`** ([step](../../src/mastra/workflows/generate-ad-creatives/steps/verify-gemini-key-step.ts))
    checks that `GOOGLE_API_KEY` exists, is at least 20 characters, and can list models. This runs
@@ -201,15 +195,15 @@ usually PNG.
 
 `retryConfig: { attempts: 5, delay: 2000 }`: up to 6 attempts per step, and per image.
 
-| Error                                                                         | Cause / fix                                                                                                     |
-| ----------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------- |
-| `Failed to fetch image from URL (403)…` / `Failed to process logo…`           | The logo or image URL isn't publicly fetchable. Use a CDN/Supabase public URL                                   |
-| `Template N is blocked by AtlasAir brand policy: …`                           | You asked for a blocked template in manual mode. Pick another from the [catalogue](../ad-template-catalogue.md) |
-| `No templates remain after applying AtlasAir brand policy…`                   | Every selected template was blocked or proof-gated. Add `socialProof` or pick product/educational templates     |
-| `GOOGLE_API_KEY environment variable is not set…` / `Invalid GOOGLE_API_KEY…` | Fix the key in `.env`. Note it is retried 5 times first                                                         |
-| `Failed to parse agent response: …`                                           | The analyst returned bad JSON. Usually transient, and retries handle it                                         |
-| `Failed to upload to Supabase: …`                                             | Supabase env vars, bucket name, or bucket permissions                                                           |
-| `Provide either "productKey" …`                                               | No product. Thrown in step 2, **after** the images have been fetched                                            |
+| Error                                                                         | Cause / fix                                                                                        |
+| ----------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------- |
+| `Failed to fetch image from URL (403)…` / `Failed to process logo…`           | The logo or image URL isn't publicly fetchable. Use a CDN/Supabase public URL                      |
+| `No generation tasks created`                                                 | None of the template IDs exist. Check the IDs against the [catalogue](../ad-template-catalogue.md) |
+| `GOOGLE_API_KEY environment variable is not set…` / `Invalid GOOGLE_API_KEY…` | Fix the key in `.env`. Note it is retried 5 times first                                            |
+| `Failed to parse agent response: …`                                           | The analyst returned bad JSON. Usually transient, and retries handle it                            |
+| `No image generated in response` / `No candidates returned from Gemini`       | Gemini declined that prompt. Re-run, or pick a different template                                  |
+| `Failed to upload to Supabase: …`                                             | Supabase env vars, bucket name, or bucket permissions                                              |
+| `Provide either "productKey" …`                                               | No product. Thrown in step 2, **after** the images have been fetched                               |
 
 One image that still fails after its retries fails the run. Images already uploaded stay in the
 bucket, but no manifest is written.
@@ -219,16 +213,12 @@ bucket, but no manifest is written.
 - **The `.webp` files in `assets/AdCreatives/` are never sent to the model.** They are visual
   references for people choosing templates. Gemini only sees your logo and product photos, plus the
   template's text prompt.
-- **Layout placeholders are left to the model.** These cover scenes, props, people's hands, colours
-  and fonts. Gemini fills them from the reference images and the template's own examples. Every
-  truth-bearing slot is filled from real input or emptied first. These are numbers, prices, offers,
-  reviews, endorsements, competitor claims and results.
-- **Some layouts still don't fit the brand,** such as the food-prop templates. The native/UGC formats
-  that showed invented people or posts (8, 20, 29, 32) are blocked. See
+- **Gemini writes whatever the run doesn't supply,** guided by each template's examples. The rules
+  tell it to write the AtlasAir equivalent rather than copy the example, but some layouts were
+  written for food brands. See
   [Known issues](../known-issues.md#some-templates-were-written-for-other-brands).
-
 - **`[BRAND]` and `[YOUR BRAND]` resolve to the product title** ("AtlasAir 2.0"), not "AtlasAir".
-- **The choking-device disclaimer and the "being unprepared" comparison are added for every product,**
-  including the first aid kit and the course.
+- **The choking-device disclaimer is added for every product,** including the first aid kit and the
+  course.
 - **Retries are generous** (6 attempts), so a persistent Supabase or Gemini error multiplies paid
   calls. Fix configuration errors rather than re-running.

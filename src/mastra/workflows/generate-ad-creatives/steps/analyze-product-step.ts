@@ -37,16 +37,6 @@ export const analyzeProductStep = createStep({
     const { originalInput } = inputData;
     const product = resolveProduct(originalInput);
 
-    // Whether real Judge.me data exists decides if review-dependent templates
-    // are worth recommending — they get filtered out downstream otherwise.
-    const proof = originalInput.socialProof;
-    const hasRealProof = Boolean(
-      proof &&
-      (proof.ratingValue !== undefined ||
-        proof.reviewCount !== undefined ||
-        proof.quotes?.length),
-    );
-
     const prompt = `
       Analyze this product and recommend the best ad creative templates:
 
@@ -54,36 +44,15 @@ export const analyzeProductStep = createStep({
       ${originalInput.targetAudience ? `Target Audience: ${originalInput.targetAudience}` : ""}
       ${originalInput.brandTone ? `Brand Tone: ${originalInput.brandTone}` : ""}
 
-      REAL SOCIAL PROOF SUPPLIED: ${
-        hasRealProof
-          ? `YES — ${[
-              proof?.ratingValue !== undefined
-                ? `rating ${proof.ratingValue}`
-                : null,
-              proof?.reviewCount !== undefined
-                ? `${proof.reviewCount} reviews`
-                : null,
-              proof?.quotes?.length
-                ? `${proof.quotes.length} verbatim review(s)`
-                : null,
-            ]
-              .filter(Boolean)
-              .join(
-                ", ",
-              )} from Judge.me. Review-dependent templates are permitted.`
-          : "NO. Do NOT recommend templates that require a review, rating, testimonial or before/after result — they will be rejected. Recommend product, educational and instructional templates instead."
-      }
-
       TASK:
-      1. Use the listTemplates tool to see the templates AtlasAir is permitted to generate
+      1. Use the listTemplates tool to see the available templates
       2. Analyze the product thoroughly
       3. Recommend 10-15 templates that best fit this product
       4. Provide clear reasoning for each recommendation
       5. Rank them by priority (high/medium/low)
 
-      keyFeatures and keyMessages are rendered directly onto the images — they must be
-      factual statements drawn from the product description above, never invented claims,
-      statistics or urgency.
+      keyFeatures and keyMessages are rendered directly onto the images, so keep each one
+      short enough to read at a glance.
 
       Return your analysis as valid JSON matching the productAnalysisSchema.
     `;

@@ -173,6 +173,7 @@ export const PROMPT_CREATIVE_MAPPINGS: PromptCreativeMapping[] = [
         Five filled stars with "Rated [X] out of 5".
         Center: [YOUR PRODUCT] at 50mm f/4.
         Below: frosted white card with five-star rating, "[REVIEW TITLE]", "[2-3 SENTENCE REVIEW]", "[ATTRIBUTION]" in italic.
+        Below card: "As Featured In" with five grayscale logos.
         [BRAND] logo bottom right.
         4:5 aspect ratio.
       `,
@@ -293,7 +294,7 @@ export const PROMPT_CREATIVE_MAPPINGS: PromptCreativeMapping[] = [
         Top half: large bold italic serif text in white with curly quotation marks reading "[PULL-QUOTE — the most emotional 4-8 word phrase from the review, e.g., "I finally found something that works!"]".
         Directly below the quote: five large filled gold/yellow star icons in a horizontal row.
         Bottom left, overlapping the color background: a white rounded-corner review card with subtle shadow, containing: a small gray circular default avatar icon, beside it "[FIRST NAME + LAST INITIAL]" in bold dark sans-serif with a small [FLAG EMOJI matching target market — e.g., 🇺🇸], below the name a blue checkmark icon with "[VERIFIED REVIEWER / VERIFIED BUYER]" in small blue text.
-        Below the reviewer info: the verbatim review text "[FULL QUOTE 2-3 sentences]" in medium-weight dark sans-serif, cut off mid-sentence after 4-6 lines and ending with "...Read more" in bold [BRAND COLOR] text — the truncation is intentional to create curiosity.
+        Below the reviewer info: the review body text in medium-weight dark sans-serif, 4-6 lines of authentic-sounding customer voice that trails off mid-sentence, ending with "...Read more" in bold [BRAND COLOR] text — the truncation is intentional to create curiosity.
         Below the review text: "Was this review helpful?" in small gray text with a thumbs-up icon and "[HELPFULNESS COUNT — e.g., 150 / 2.4K]" beside it.
         Bottom right, overlapping both the card and the color background: [YOUR PRODUCT — full packaging description] angled slightly toward the viewer, sitting on the color block surface with a subtle shadow beneath.
         No brand logo needed if the product packaging already shows it — the review card IS the social proof.
@@ -348,7 +349,7 @@ export const PROMPT_CREATIVE_MAPPINGS: PromptCreativeMapping[] = [
         Left side top: "[STAT 1 — e.g. 20g]" in oversized bold text with "[LABEL — e.g. PROTEIN]" below.
         Left side bottom: "[STAT 2 — e.g. 280]" with "[LABEL — e.g. CALORIES]".
         Right side top: "[STAT 3 — e.g. 900k+]" with "[LABEL — e.g. HAPPY CUSTOMERS]".
-        Right side bottom: "[STAT 4 — e.g. 30k+]" with "[LABEL — e.g. 5-STAR REVIEWS]".
+        Right side bottom: "[STAT 4 — e.g. 30k+]" with "[LABEL — e.g. 5-STAR REVIEWS]" and five filled gold stars beneath.
         Arrows are simple hand-drawn-style curved lines in [ARROW COLOR — e.g. black].
         Bottom foreground: [FLAVOR PROPS — e.g. scattered chocolate chip cookie dough balls and chocolate chips] adding appetite appeal.
         No brand logo.
@@ -428,7 +429,7 @@ export const PROMPT_CREATIVE_MAPPINGS: PromptCreativeMapping[] = [
         Closing quotation marks and "[ATTRIBUTION — e.g. - Erin D.]" in regular weight.
         Left side bottom third: [YOUR PRODUCT — e.g. supplement bottle] at a slight angle with [PRODUCT DETAILS — e.g. capsules scattered nearby].
         To the left of the product: a [TRUST BADGE — e.g. circular seal reading "Happiness 60 DAY Guaranteed"].
-        Right side bottom third: [NUMBER — e.g. five] filled [ACCENT COLOR] stars and bold text reading "[SOCIAL PROOF]" with a [BRAND ICON].
+        Right side bottom third: [NUMBER — e.g. five] filled [ACCENT COLOR] stars and bold text reading "[REVIEW COUNT — e.g. 3,600+] 5-Star Reviews" with a [BRAND ICON].
         Bottom edge: small disclaimer text "[DISCLAIMER — e.g. Results may vary based on individual. No results guaranteed.]"
         1:1 aspect ratio.
       `,
@@ -451,7 +452,7 @@ export const PROMPT_CREATIVE_MAPPINGS: PromptCreativeMapping[] = [
         Create: a static ad on a solid [BRAND COLOR — e.g. periwinkle/lavender blue] background.
         Top: large bold white serif or semi-bold sans-serif pull-quote reading "[HEADLINE QUOTE — e.g. "I finally found something that works!"]" in quotation marks.
         Below the quote: five filled gold stars, large.
-        Center-left: a white rounded-rectangle review card with subtle shadow containing: gray circular avatar icon, bold name "[REVIEWER NAME — e.g. Dawn K.]" with [FLAG EMOJI — e.g. 🇺🇸], blue checkmark and "[VERIFIED BADGE TEXT — e.g. Verified Reviewer]" in [BRAND COLOR] text, then the verbatim review text "[FULL QUOTE 2-3 sentences]" in regular weight dark text.
+        Center-left: a white rounded-rectangle review card with subtle shadow containing: gray circular avatar icon, bold name "[REVIEWER NAME — e.g. Dawn K.]" with [FLAG EMOJI — e.g. 🇺🇸], blue checkmark and "[VERIFIED BADGE TEXT — e.g. Verified Reviewer]" in [BRAND COLOR] text, then 3-4 sentences of review body text in regular weight dark text.
         At the bottom of the card: a blue "[READ MORE — e.g. ...Read more]" link and "[HELPFULNESS — e.g. Was this review helpful? 👍 150]".
         Right side, overlapping the card edge: [YOUR PRODUCT — e.g. cream jar with lid] photographed at a slight angle, soft studio lighting, casting a gentle shadow on the background.
         No brand logo.
@@ -478,7 +479,7 @@ export const PROMPT_CREATIVE_MAPPINGS: PromptCreativeMapping[] = [
         Top: bold [ACCENT COLOR — e.g. purple] filled banner bar spanning full width, white all-caps sans-serif reading "[HEADLINE — e.g. INCREDIBLY TASTY BREAKFAST IN 30 SECONDS]".
         Center: a [PERSON DETAIL — e.g. woman's hand] holding [YOUR PRODUCT — e.g. branded shaker cup] in mid-frame.
         Scattered around the edges: [FLATLAY PROPS — e.g. product sachets, pancakes on plates, blueberries, muffins, fruit] arranged organically to fill corners and edges, slightly out of focus.
-        Four stat callouts with curved [ACCENT COLOR] arrows pointing toward the held product: "[STAT 1 — e.g. 20g] / [LABEL — e.g. PROTEIN]", "[STAT 2 — e.g. 900K] / [LABEL — e.g. HAPPY CUSTOMERS]", "[STAT 3 — e.g. 20+] / [LABEL — e.g. FLAVORS]", "[STAT 4 — e.g. 30K] / [LABEL — e.g. 5 STAR REVIEWS]".
+        Four stat callouts with curved [ACCENT COLOR] arrows pointing toward the held product: "[STAT 1 — e.g. 20g] / [LABEL — e.g. PROTEIN]", "[STAT 2 — e.g. 900K] / [LABEL — e.g. HAPPY CUSTOMERS]", "[STAT 3 — e.g. 20+] / [LABEL — e.g. FLAVORS]", "[STAT 4 — e.g. 30K] / [LABEL — e.g. 5 STAR REVIEWS]" with five small gold stars.
         Stats in bold black, labels in all-caps regular weight.
         Bright, flat studio lighting.
         Energetic, appetizing, information-dense but scannable.
@@ -501,7 +502,7 @@ export const PROMPT_CREATIVE_MAPPINGS: PromptCreativeMapping[] = [
         ⚠️ All [BRACKET TEXT] are layout instructions — never render brackets literally in the image. Replace every placeholder with real, product-appropriate content.
         Use the attached images as brand reference. Match the exact product design, colors, and typography style precisely.
         Create: a static ad on a clean white background.
-        Top left: a plain gray circular default avatar icon, never a generated face.
+        Top left: circular customer headshot photo of [PERSON DESCRIPTION — e.g. smiling woman, mid-60s, silver wavy hair, wearing blue top].
         To the right of the photo: bold name "[REVIEWER NAME — e.g. Veronica B.]" with a [VERIFIED ICON — e.g. blue checkmark].
         Below: a long-form customer quote in large regular-weight black sans-serif type spanning most of the frame: "[FULL QUOTE, 3-5 sentences]".
         Key phrases within the quote are highlighted with [HIGHLIGHT COLOR — e.g. bright lime green / neon yellow] rectangular background fills behind the text: "[HIGHLIGHTED PHRASE 1 — e.g. thyroid removed]", "[HIGHLIGHTED PHRASE 2 — e.g. This is the best product I have found.]"
@@ -684,14 +685,14 @@ export const PROMPT_CREATIVE_MAPPINGS: PromptCreativeMapping[] = [
       promptText: `
         ⚠️ All [BRACKET TEXT] are layout instructions — never render brackets literally in the image. Replace every placeholder with real, product-appropriate content.
         Use the attached images as brand reference. Match exact brand colors and typography.
-        Create: a headline-led ad.
+        Create: a statistic-led ad.
         Top 50%: lifestyle product photography — [SCENE — e.g. a woman's hands holding the product pad / person using the product in context] on a [MOOD — e.g. warm, skin-toned, soft-focus] background.
         Product packaging visible in frame.
         Middle: brand logo centered with thin horizontal rules on either side as a visual divider.
         Bottom 50%: dark gradient overlay (fading from transparent to [DARK COLOR — e.g. deep brown/black]).
-        Large bold uppercase sans-serif text: "[HEADLINE]."
-        Key phrases highlighted in [ACCENT COLOR — e.g. soft pink / brand secondary color].
-        The headline IS the message — no separate subhead needed.
+        Large bold uppercase sans-serif text: "[STAT-DRIVEN HEADLINE — e.g. AFTER SWITCHING TO THIS BRAND, X% OF USERS SAW RESULTS, WHILE Y% REPORTED A SECOND BENEFIT]."
+        Key result phrases highlighted in [ACCENT COLOR — e.g. soft pink / brand secondary color].
+        The statistic IS the headline — no separate subhead needed.
         4:5 aspect ratio.
       `,
     },

@@ -4,12 +4,8 @@ import {
   getCreativeForPrompt,
   getAllMappings,
   getPromptsByCategory,
+  getAllCategories,
 } from "../utils/prompt-creative-mapping";
-import {
-  getBlockReason,
-  isBlocked,
-  isOffCategory,
-} from "../brand/template-policy";
 
 /**
  * Tool to lookup template information by ID
@@ -37,18 +33,6 @@ export const lookupTemplateTool = createTool({
       throw new Error(`Template ${templateId} not found. Valid IDs are 1-40.`);
     }
 
-    if (isBlocked(templateId)) {
-      throw new Error(
-        `Template ${templateId} (${mapping.prompt.name}) is blocked by AtlasAir brand policy: ${getBlockReason(templateId)}`,
-      );
-    }
-
-    if (isOffCategory(templateId)) {
-      throw new Error(
-        `Template ${templateId} (${mapping.prompt.name}) is not applicable to the AtlasAir catalogue.`,
-      );
-    }
-
     return {
       templateId: mapping.prompt.id,
       templateName: mapping.prompt.name,
@@ -67,7 +51,7 @@ export const lookupTemplateTool = createTool({
 export const listTemplatesTool = createTool({
   id: "list-templates",
   description:
-    "List the ad creative templates AtlasAir is permitted to generate, with their categories. Templates blocked by brand policy (fabricated press, fabricated social proof, manufactured urgency) are excluded and cannot be requested.",
+    "List all ad creative templates with their categories and aspect ratios.",
   inputSchema: z.object({
     category: z.string().optional().describe("Filter by category (optional)"),
   }),
@@ -84,13 +68,9 @@ export const listTemplatesTool = createTool({
     availableCategories: z.array(z.string()),
   }),
   execute: async ({ category }) => {
-    const mappings = (
-      category ? getPromptsByCategory(category) : getAllMappings()
-    ).filter(
-      // Brand policy is applied here so blocked templates are absent from the
-      // agent's choices entirely, rather than merely discouraged in a prompt.
-      (m) => !isBlocked(m.prompt.id) && !isOffCategory(m.prompt.id),
-    );
+    const mappings = category
+      ? getPromptsByCategory(category)
+      : getAllMappings();
 
     return {
       templates: mappings.map((m) => ({
@@ -100,17 +80,7 @@ export const listTemplatesTool = createTool({
         aspectRatio: m.prompt.aspectRatio,
         tags: m.prompt.tags,
       })),
-      // Categories are derived from the permitted set too, so the agent can't
-      // filter by a category that only blocked templates belong to.
-      availableCategories: Array.from(
-        new Set(
-          getAllMappings()
-            .filter(
-              (m) => !isBlocked(m.prompt.id) && !isOffCategory(m.prompt.id),
-            )
-            .map((m) => m.prompt.category),
-        ),
-      ).sort(),
+      availableCategories: getAllCategories(),
     };
   },
 });

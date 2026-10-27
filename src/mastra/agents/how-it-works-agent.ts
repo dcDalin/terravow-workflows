@@ -46,8 +46,6 @@ export const howItWorksAgent = new Agent({
       theatre. The reader supplies the adrenaline; your job is clarity.
     - Never claim a guaranteed outcome. "Helps dislodge a blockage" — never "removes the
       object", "clears the airway" or "saves a life".
-    - Never invent a number: no seconds-to-act countdown, no survival percentage, no
-      success rate.
 
     VISUAL THEMES:
     Clear, calm, instructional. Two families of imagery, chosen to fit the step:

@@ -19,14 +19,13 @@ import {
  * Step 2: Turn each source analysis into an AtlasAir remix prompt.
  *
  * No LLM here on purpose. The vision agent said what is in the source; this step
- * decides what happens to it, using the policy table in brand/remix-policy.ts.
- * Keeping the decision deterministic means the honesty rules produce the same
- * result on every run and are auditable in the manifest afterwards.
+ * decides what happens to it, using the table in brand/remix-policy.ts, so the
+ * same source produces the same plan on every run and the manifest records it.
  */
 export const planRemixTasksStep = createStep({
   id: "plan-remix-tasks",
   description:
-    "Apply AtlasAir remix policy to each source analysis and build the remix prompts",
+    "Decide how each source element carries into the remix and build the remix prompts",
   inputSchema: z.object({
     originalInput: generateRemixInputSchema,
     analyses: z.array(sourceAnalysisSchema),
@@ -42,12 +41,6 @@ export const planRemixTasksStep = createStep({
     const product = resolveProduct(originalInput);
 
     const proof = originalInput.socialProof;
-    const hasRealProof = Boolean(
-      proof &&
-      (proof.ratingValue !== undefined ||
-        proof.reviewCount !== undefined ||
-        proof.quotes?.length),
-    );
 
     // No defaults. The remix reproduces what the source has; it does not add a
     // CTA or a website that weren't there. These are only set if the caller
@@ -64,8 +57,9 @@ export const planRemixTasksStep = createStep({
         : "   Mode: keep source product, swap its branding to AtlasAir (no product images supplied)",
     );
 
-    // Real Judge.me figures, used only where a social-proof slot already exists
-    // in the source layout.
+    // Judge.me figures, when supplied, fill a social-proof slot that already
+    // exists in the source layout. Without them the image model writes the
+    // AtlasAir equivalent.
     const ratingText =
       proof?.ratingValue !== undefined && proof?.reviewCount !== undefined
         ? `${proof.ratingValue} stars from ${proof.reviewCount} Judge.me reviews`
@@ -73,7 +67,7 @@ export const planRemixTasksStep = createStep({
           ? `${proof.ratingValue} stars on Judge.me`
           : proof?.reviewCount !== undefined
             ? `${proof.reviewCount} Judge.me reviews`
-            : "";
+            : undefined;
     const firstQuote = proof?.quotes?.[0];
 
     const tasks: z.infer<typeof remixTaskSchema>[] = [];
@@ -91,9 +85,7 @@ export const planRemixTasksStep = createStep({
 
       const elementPlan: ElementPlan[] = analysis.textElements.map((el) => {
         const classification = el.classification as ElementClassification;
-        let { action, reason } = decideElement(classification, {
-          hasRealProof,
-        });
+        let { action, reason } = decideElement(classification);
 
         let replacement: string | undefined;
         if (action === "replace") {
@@ -138,15 +130,6 @@ export const planRemixTasksStep = createStep({
           replacement,
         };
       });
-
-      const dropped = elementPlan.filter((e) => e.action === "drop");
-      if (dropped.length) {
-        console.log(
-          `   Source ${sourceIndex + 1}: dropped ${dropped.length} element(s) — ${dropped
-            .map((d) => `"${d.sourceText.slice(0, 40)}" (${d.classification})`)
-            .join(", ")}`,
-        );
-      }
 
       const aspectRatio =
         originalInput.aspectRatio ?? analysis.detectedAspectRatio;
@@ -231,7 +214,6 @@ function buildRemixPrompt(args: {
 
   const keeps = elementPlan.filter((e) => e.action === "keep");
   const replacements = elementPlan.filter((e) => e.action === "replace");
-  const drops = elementPlan.filter((e) => e.action === "drop");
 
   const fidelityLine =
     layoutFidelity === "close"
@@ -323,14 +305,7 @@ ${replacements
     : "Nothing to replace."
 }
 
-${
-  drops.length
-    ? `OMIT ENTIRELY — these elements from the source must NOT appear in any form, reworded or otherwise. Remove them and rebalance the composition into the space they leave:
-${drops.map((e) => `  • ${e.role} (${e.classification}) — ${e.reason}`).join("\n")}`
-    : "Nothing to omit."
-}
-
-Product facts available ONLY for a text slot that already exists in the source layout (use these to fill a product-claim slot, invent nothing; do not add a slot that isn't there):
+Product facts to draw on when writing the AtlasAir content above (do not add a slot that isn't there):
 ${product.features.map((f) => `  • ${f}`).join("\n") || `  • ${product.shortName}`}
 ${
   websiteOverride
@@ -341,15 +316,9 @@ ${
 ═══════════════════════════════
 ABSOLUTE CONTENT RULES
 ═══════════════════════════════
-• Render ONLY the text specified above. Do NOT invent any additional text.
+• Render only the text slots listed above, each with the content given for it. Add no other text.
 • Add NO extras that the source does not have: no call-to-action button, no website or URL, no badges, no tagline, no strapline. If the source has none of these, neither does the remix.
-• DO NOT render, under any circumstances, even if the reference image contains them:
-  - statistics of any kind — lives saved, success rates, percentages, units sold, "trusted by N families"
-  - star ratings, review counts, testimonials, customer names, quoted customers
-  - certification marks, FDA/CE symbols, medical endorsements, "clinically proven", "doctor recommended", awards, press logos
-  - countdowns, stock counters, "limited time", discount bursts or any urgency device
-  - any comparison against another brand
-• If a slot has no approved content, omit the element and rebalance the layout. An emptier, cleaner ad is the correct result. Never fill a gap with an invented substitute.
+• Where a slot says "AtlasAir equivalent content", write what an AtlasAir ad would put there in the same role and at the same length: a statistic for a statistic, a review for a review, a badge for a badge.
 • SAFETY: ${BRAND.safetyDisclaimer} Render this as legible small print. Never depict a child in distress or a staged emergency. Never imply a guaranteed medical outcome — the product "helps dislodge a blockage".
 • ZERO square brackets or placeholder text in the output.
 

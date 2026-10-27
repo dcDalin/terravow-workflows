@@ -1,10 +1,10 @@
-import { BRAND, HONESTY_RULES, VOICE_RULES } from "./atlasair";
+import { BRAND, VOICE_RULES } from "./atlasair";
 import type { ResolvedProduct } from "./products";
 
 /**
  * Reusable prompt fragments. Every agent and every hardcoded step prompt builds
- * from these so the brand, the safety rules and the honesty policy read
- * identically no matter which workflow produced the asset.
+ * from these so the brand and the safety rules read identically no matter
+ * which workflow produced the asset.
  */
 
 export function brandBlock(): string {
@@ -31,16 +31,6 @@ SAFETY — non-negotiable, applies to every sentence you write:
 - Use "helps dislodge a blockage", never "clears the blockage", "removes the object" or "saves your child".
 - Never instruct the reader to delay calling emergency services for any reason.
 - Do not give medical advice beyond what the product documentation supports.
-`.trim();
-}
-
-export function honestyBlock(): string {
-  return `
-HONESTY — ${BRAND.name} competes on being trustworthy. These are hard rules, not preferences:
-${HONESTY_RULES.map((r) => `- ${r}`).join("\n")}
-
-Social proof: ${BRAND.socialProofPolicy.rule}
-Trust elements: ${BRAND.trustStrip}
 `.trim();
 }
 
@@ -114,7 +104,7 @@ export function productBlock(product: ResolvedProduct): string {
   return lines.join("\n");
 }
 
-/** Brand + safety + honesty, in the order every agent should carry them. */
+/** Brand + safety, in the order every agent should carry them. */
 export function agentPreamble(): string {
-  return [brandBlock(), safetyBlock(), honestyBlock()].join("\n\n");
+  return [brandBlock(), safetyBlock()].join("\n\n");
 }

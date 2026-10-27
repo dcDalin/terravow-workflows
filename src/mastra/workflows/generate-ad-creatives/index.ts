@@ -39,12 +39,9 @@ const generateAdCreativesWorkflow = createWorkflow({
     • "ai": AI picks best templates (set aiSelectTemplateCount)
     • "manual": You choose (set templateIds: [1, 27, 28])
 
-    ⚖️ BRAND POLICY — enforced in code, not just in prompts:
-    • Templates that fabricate press coverage, social proof or urgency are blocked outright
-      and will throw if selected manually (see src/mastra/brand/template-policy.ts)
-    • Review, rating and testimonial templates are skipped unless you pass real Judge.me data
-      in "socialProof". Nothing is invented to fill an empty layout slot
+    ⚖️ FIXED RULES:
     • Every creative carries the airway-clearance-aid disclaimer as small print
+    • Pass "socialProof" to use real Judge.me figures and reviews in rating and review slots
 
     📸 IMAGE REQUIREMENTS:
     • All images must be publicly accessible URLs

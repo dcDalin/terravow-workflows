@@ -15,11 +15,9 @@ export const imageInputSchema = z
 export type ImageInput = z.infer<typeof imageInputSchema>;
 
 /**
- * Real social proof, supplied by a human from the store's Judge.me account.
- *
- * Nothing here has a default. If a field is absent the corresponding element is
- * omitted from the creative rather than filled with a plausible-looking number —
- * that is the whole point of the brand's honesty policy.
+ * Social proof from the store's Judge.me account, supplied per run. Any field
+ * given here fills the matching rating or review slot; anything absent is left
+ * for the image model to fill.
  */
 export const socialProofSchema = z.object({
   source: z
@@ -67,7 +65,7 @@ export const socialProofSchema = z.object({
     )
     .optional()
     .describe(
-      "Verbatim reviews. Only real ones — a creative with no quote is better than one with an invented quote.",
+      "Verbatim reviews. The first one fills the quote and reviewer slots.",
     ),
 });
 
@@ -206,7 +204,7 @@ export const generateAdCreativesInputSchema = z.object({
   socialProof: socialProofSchema
     .optional()
     .describe(
-      "REAL Judge.me review data, copied from the store. Leave empty and no social-proof element is rendered at all — nothing is invented to fill the gap. Templates that need a review or rating are skipped when this is absent.",
+      "Optional Judge.me review data, copied from the store. When supplied it fills the rating and review slots; when absent the image model writes them.",
     ),
 
   outputDirectory: z

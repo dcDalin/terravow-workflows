@@ -13,12 +13,10 @@ import { resolveProduct } from "../../../brand/products";
 import { REMIX_SCOPE } from "../../../brand/remix-policy";
 
 /**
- * Step 4: Write the manifest and report what was stripped.
+ * Step 4: Write the manifest.
  *
- * The manifest records the full element plan per remix — every claim, badge and
- * statistic the policy removed, with the reason. That record is the point: if a
- * remix is ever questioned, it can be shown exactly what was dropped from the
- * source and why.
+ * The manifest records the full element plan per remix: how every text element
+ * of the source was kept or rewritten, and why.
  */
 export const saveRemixesStep = createStep({
   id: "save-remixes",
@@ -40,30 +38,9 @@ export const saveRemixesStep = createStep({
         remixes: [],
         outputDirectory: "",
         manifestPath: "",
-        droppedElements: [],
         summary: "No remixes generated",
       };
     }
-
-    // Aggregate everything the policy stripped, deduplicated across variations
-    // of the same source (which share an element plan).
-    const seen = new Set<string>();
-    const droppedElements = remixes.flatMap((remix) =>
-      remix.elementPlan
-        .filter((el) => el.action === "drop")
-        .filter((el) => {
-          const key = `${remix.sourceUrl}::${el.sourceText}`;
-          if (seen.has(key)) return false;
-          seen.add(key);
-          return true;
-        })
-        .map((el) => ({
-          sourceUrl: remix.sourceUrl,
-          text: el.sourceText,
-          classification: el.classification,
-          reason: el.reason,
-        })),
-    );
 
     const manifestContent = JSON.stringify(
       {
@@ -73,7 +50,6 @@ export const saveRemixesStep = createStep({
         sourceImages: originalInput.sourceImages,
         remixScope: REMIX_SCOPE,
         totalRemixes: remixes.length,
-        droppedElements,
         remixes: remixes.map((r) => ({
           sourceUrl: r.sourceUrl,
           sourceIndex: r.sourceIndex,
@@ -158,16 +134,7 @@ export const saveRemixesStep = createStep({
       console.log(`📋 Uploaded manifest: ${manifestPath}`);
     }
 
-    if (droppedElements.length) {
-      console.log(
-        `🧹 Stripped ${droppedElements.length} non-compliant element(s) from the source creative(s):`,
-      );
-      for (const el of droppedElements) {
-        console.log(`   • [${el.classification}] "${el.text.slice(0, 60)}"`);
-      }
-    }
-
-    const summary = `Generated ${remixes.length} AtlasAir remix(es) from ${sourceCount} source creative(s) for "${product.title}". ${droppedElements.length} non-compliant element(s) stripped (statistics, social proof, badges or urgency). Files saved to ${outputDirectory}`;
+    const summary = `Generated ${remixes.length} AtlasAir remix(es) from ${sourceCount} source creative(s) for "${product.title}". Files saved to ${outputDirectory}`;
 
     console.log(`✅ ${summary}`);
 
@@ -177,7 +144,6 @@ export const saveRemixesStep = createStep({
       remixes,
       outputDirectory,
       manifestPath,
-      droppedElements,
       summary,
     };
   },

@@ -56,7 +56,6 @@ Each step must have:
   NEVER a child in visible distress.
 
 Language: "helps dislodge a blockage" — never "removes the object" or "clears the airway".
-Invent no numbers: no countdown, no survival rate, no success percentage.
 
 Return ONLY a valid JSON array, no markdown:
 [

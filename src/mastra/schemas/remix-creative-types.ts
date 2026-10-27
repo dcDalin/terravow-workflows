@@ -111,7 +111,7 @@ export const generateRemixInputSchema = z.object({
   socialProof: socialProofSchema
     .optional()
     .describe(
-      "REAL Judge.me data. Without it, any social-proof element in the source (stars, ratings, testimonials) is REMOVED from the remix rather than reproduced with AtlasAir's name on it.",
+      "Optional Judge.me data. When supplied it fills the source's social-proof slots; without it, they are rewritten as AtlasAir equivalents.",
     ),
 
   // ========== GENERATION ==========
@@ -233,7 +233,7 @@ export const elementPlanSchema = z.object({
   sourceText: z.string(),
   role: z.string(),
   classification: z.string(),
-  action: z.enum(["keep", "replace", "drop"]),
+  action: z.enum(["keep", "replace"]),
   reason: z.string(),
   replacement: z
     .string()
@@ -271,7 +271,7 @@ export const remixOutputSchema = z.object({
   aspectRatio: z.string(),
   generatedAt: z.string(),
   generationTime: z.number(),
-  /** Kept on the output so every dropped claim is auditable after the fact. */
+  /** How each source text element was carried into this remix. */
   elementPlan: z.array(elementPlanSchema),
   metadata: z.object({
     productTitle: z.string(),
@@ -287,15 +287,6 @@ export const remixWorkflowOutputSchema = z.object({
   remixes: z.array(remixOutputSchema),
   outputDirectory: z.string(),
   manifestPath: z.string(),
-  /** Everything the policy stripped, aggregated across all sources. */
-  droppedElements: z.array(
-    z.object({
-      sourceUrl: z.string(),
-      text: z.string(),
-      classification: z.string(),
-      reason: z.string(),
-    }),
-  ),
   summary: z.string(),
 });
 

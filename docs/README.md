@@ -9,8 +9,8 @@ landing pages and ads.
 
 1. [Overview](overview.md): what the five workflows produce
 2. [Running workflows](running-workflows.md): copy-paste recipes, finding your files, the pre-publish checklist, troubleshooting
-3. [Ad template catalogue](ad-template-catalogue.md): every ad template, with a sample image and whether it's allowed
-4. [Brand and policy](brand-and-policy.md): the honesty and safety rules, and which ones code enforces
+3. [Ad template catalogue](ad-template-catalogue.md): every ad template, with a sample image
+4. [Brand and policy](brand-and-policy.md): the brand and safety rules, social proof, and how remixes are rewritten
 5. [Landing pages](landing-pages.md): where each output goes on Shopify and LPs
 
 **Working on the code** (engineering):

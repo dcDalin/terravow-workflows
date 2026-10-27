@@ -38,7 +38,6 @@ const generateHowItWorksWorkflow = createWorkflow({
     ⚖️ FIXED RULES:
     • Step 1 is ALWAYS "Call Emergency Services" — never reordered or softened
     • Copy says "helps dislodge a blockage", never "removes the object"
-    • No invented statistics, countdowns or success rates
 
     🖼️ IMAGE STYLE:
     • Light, calm palette — soft neutrals and gentle domestic light

@@ -74,7 +74,7 @@ Schema: `faqsOutputSchema`.
 - An **ad-hoc product** (no `productKey`) is always treated as a physical device, so a digital
   product without a key gets shipping questions. Add it to the catalogue instead. See
   [Extending](../extending.md#add-a-product).
-- The question mix, the mandatory "what it is not" FAQ and the no-invented-numbers rule are prompt
-  instructions only. Read the FAQs before publishing.
+- The question mix and the mandatory "what it is not" FAQ are prompt instructions only. Read the
+  FAQs before using them.
 - The theme's FAQ metafield expects `{ title, description }`, so `question` maps to `title` and
   `answer` maps to `description`. See [Landing pages](../landing-pages.md).

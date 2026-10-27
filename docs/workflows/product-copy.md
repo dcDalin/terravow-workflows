@@ -17,12 +17,12 @@ pages and LPs. See [Landing pages](../landing-pages.md).
 Schema: `generateProductCopyInputSchema` in
 [`schemas/product-copy-types.ts`](../../src/mastra/schemas/product-copy-types.ts).
 
-| Field                | Type              | Default                            | Effect                                                                                                                                                    |
-| -------------------- | ----------------- | ---------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `productKey`         | catalogue key     | —                                  | Fills in title, description, features and type from [`brand/products.ts`](../../src/mastra/brand/products.ts)                                             |
-| `productTitle`       | string, 1–100     | —                                  | Overrides the preset title. Required (with `productDescription`) when there is no key                                                                     |
-| `productDescription` | string, 10–10,000 | —                                  | Replaces the generated description entirely. **This is the only way to get a real returns window into the guarantee section.** The agent won't invent one |
-| `outputDirectory`    | string            | `<asset root>/<title>/<timestamp>` | Folder for `product-copy.txt`                                                                                                                             |
+| Field                | Type              | Default                            | Effect                                                                                                                  |
+| -------------------- | ----------------- | ---------------------------------- | ----------------------------------------------------------------------------------------------------------------------- |
+| `productKey`         | catalogue key     | —                                  | Fills in title, description, features and type from [`brand/products.ts`](../../src/mastra/brand/products.ts)           |
+| `productTitle`       | string, 1–100     | —                                  | Overrides the preset title. Required (with `productDescription`) when there is no key                                   |
+| `productDescription` | string, 10–10,000 | —                                  | Replaces the generated description entirely. Include the store's returns window here to use it in the guarantee section |
+| `outputDirectory`    | string            | `<asset root>/<title>/<timestamp>` | Folder for `product-copy.txt`                                                                                           |
 
 ## Steps
 
@@ -52,16 +52,18 @@ The description field holds sections B–G of the agent's instructions, in order
   product description.
 - **E. Who it's for**: the household, and the age range the product actually supports.
 - **F. After the moment**: reuse and storage. For the course: lifetime access instead.
-- **G. The honest bit**: mandatory. Says it is an airway-clearance aid, not a substitute for medical
+- **G. What it is not**: mandatory. Says it is an airway-clearance aid, not a substitute for medical
   care or CPR training.
 
 Formatting is plain text with blank lines between paragraphs and an em dash after section and feature
 names: no markdown. It is meant to be pasted straight into Shopify's rich-text editor.
 
-The **guarantee section** carries store policy and product facts only. It contains no customer
-counts, ratings, statistics, certifications, urgency or invented returns windows. If no returns policy
-is supplied, the title is about the policy itself (for example "Our returns policy, in plain
-English") and the body says returns follow the store's published policy.
+The **guarantee section** sells confidence:
+
+- **Title:** leads with the guarantee, using the returns window from the description, or a standard
+  money-back window if none is given.
+- **Body:** three paragraphs covering the guarantee terms, social proof from the families who already
+  keep one at home, and a short closing line.
 
 ## Output
 
@@ -93,7 +95,8 @@ Supabase option for this workflow. The file has two labelled sections:
 
 ## Things to know
 
-- The honesty rules here are **instructions to the model**. Nothing in code checks the output.
-  Review it before publishing. See [Known issues](../known-issues.md#honesty-rules-in-the-text-workflows-are-prompt-only).
+- The safety rules here (step 1 is the call, the "what it is not" section) are **instructions to the
+  model**. Nothing in code checks the output. See
+  [Known issues](../known-issues.md#safety-rules-and-counts-in-the-text-workflows-are-prompt-only).
 - The file goes under `ASSET_OUTPUT_ROOT`, which defaults to `~/Desktop/AtlasAirAssets`. Set it
   to an absolute path. See [Getting started](../getting-started.md#environment-variables).

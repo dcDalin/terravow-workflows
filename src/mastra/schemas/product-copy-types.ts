@@ -24,7 +24,7 @@ export const generateProductCopyInputSchema = z.object({
     .max(10000)
     .optional()
     .describe(
-      "Raw product description — what it is, how it works, what's included, who it's for. Optional if productKey is set. Put the store's real returns policy here if you want it reflected in the guarantee section: it will not be invented.",
+      "Raw product description — what it is, how it works, what's included, who it's for. Optional if productKey is set. Include the store's returns window here to use it in the guarantee section.",
     ),
 
   outputDirectory: z

@@ -61,7 +61,7 @@ HARD PROHIBITIONS — these produce an unusable image:
   - NO dark cinematic biotech aesthetic, glowing cells, mitochondria, DNA, molecules, particle systems or bioluminescence. This is not a supplement advert.
   - NO child, infant or adult depicted in visible distress, panic or medical crisis. Show calm, competent, prepared action only.
   - NO blood, no injury detail, no frightening imagery.
-  - NO invented text of any kind: no statistics, no percentages, no star ratings, no review counts, no certification badges, no medical logos, no "FDA approved", no countdown or urgency graphics. Render ONLY the text specified below.
+  - Render ONLY the text specified below. No other text in the frame.
 
 TEXT OVERLAYS — crisp, clean sans-serif typography, high contrast, immediately legible:
 

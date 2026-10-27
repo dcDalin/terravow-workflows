@@ -24,7 +24,7 @@ Recipes for the changes people make most often, listing every file each one touc
    and [Brand and policy](brand-and-policy.md#product-catalogue).
 5. **Check choking-specific wording** if the product isn't a choking device. All of these assume one:
    - `BRAND.safetyDisclaimer`
-   - the "being unprepared" comparison fallbacks in `customize-prompts-step.ts`
+   - the before/after and `[PROBLEM VISUAL]` mappings in `customize-prompts-step.ts`
    - the how-it-works and product-copy agent instructions
 
    `type: "digital"` switches the FAQ question mix and tells prompts not to mention shipping.
@@ -48,43 +48,34 @@ true statements.
    - `templateIds` `.max(40)` and its description in `schemas/ad-creatives-types.ts`
    - `lookupTemplateTool` in `tools/lookup-template.ts`
    - `validateMapping()` in `prompt-creative-mapping.ts`
-4. **Classify it** in [`brand/template-policy.ts`](../src/mastra/brand/template-policy.ts). The
-   policy is a denylist, so a new template is **Allowed** unless you add it to one of these lists:
-   - `BLOCKED_TEMPLATES` (with a reason)
-   - `OFF_CATEGORY_TEMPLATE_IDS`
-   - `PROOF_REQUIRED_TEMPLATE_IDS`, if the layout shows a rating, review, testimonial or
-     before/after result
-5. **Use placeholders that the `replacements` map in
+4. **Map the placeholders you want filled from real data.** The `replacements` map in
    [`customize-prompts-step.ts`](../src/mastra/workflows/generate-ad-creatives/steps/customize-prompts-step.ts)
-   already handles**, or add new keys there. A placeholder missing from the map reaches the image
-   model as a free-form instruction. That's fine for layout details like `[SCENE]` and dangerous for
-   anything truth-bearing (numbers, prices, offers, reviews, endorsements, competitors, results).
-   Truth-bearing slots must map to real input or to `""`. A key also matches its
-   `[KEY — e.g. …]` and `[KEY, …]` forms. To fill repeated slots with different values, give the key
-   an array; the values are used in order.
-   Don't write literal instructions to render invented content into the template text, such as
-   "five gold stars", "As Featured In" or "authentic-sounding review text".
-6. **Regenerate** the [template catalogue](ad-template-catalogue.md#keeping-this-page-current).
+   fills slots from the product, the analyst's messages, the palette and `socialProof`.
+   - **Unmapped placeholders:** anything not in the map, or mapped to `undefined`, is left for the
+     image model to fill.
+   - **Matching forms:** a key also matches its `[KEY — e.g. …]` and `[KEY, …]` forms.
+   - **Repeated slots:** to fill them with different values, give the key an array. The values are
+     used in order.
+5. **Regenerate** the [template catalogue](ad-template-catalogue.md#keeping-this-page-current).
 
-No agent change is needed. The analyst's `listTemplates` tool and its instructions are built from
-the mapping and policy lists.
+No agent change is needed. The analyst's `listTemplates` tool reads the mapping directly.
 
 ## Change a brand rule
 
 Where the rule needs to live depends on which outputs it should reach:
 
-| To affect                                              | Edit                                                                                                                                                                        |
-| ------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| All text agents (copy, FAQs, how-it-works, ad analyst) | `HONESTY_RULES`, `VOICE_RULES` or `BRAND` in [`brand/atlasair.ts`](../src/mastra/brand/atlasair.ts). They reach the agents through `agentPreamble()`                        |
-| Ad creative images                                     | The "ABSOLUTE RULES" block at the end of `customize-prompts-step.ts`. It's inline text and **doesn't** import `HONESTY_RULES`                                               |
-| Remix images                                           | The "ABSOLUTE CONTENT RULES" in `buildRemixPrompt()` in `plan-remix-tasks-step.ts`. Also inline                                                                             |
-| How-it-works images                                    | The "HARD PROHIBITIONS" in `generate-how-it-works-image-step.ts`                                                                                                            |
-| Palette, fonts, shape                                  | `BRAND.palette` / `typography` / `shape`. A **new** field must also be added to `visualIdentityBlock()` in [`brand/prompt-blocks.ts`](../src/mastra/brand/prompt-blocks.ts) |
-| Which ad templates run                                 | [`brand/template-policy.ts`](../src/mastra/brand/template-policy.ts)                                                                                                        |
-| What survives a remix                                  | [`brand/remix-policy.ts`](../src/mastra/brand/remix-policy.ts) (see below)                                                                                                  |
+| To affect                                              | Edit                                                                                                                                                                          |
+| ------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| All text agents (copy, FAQs, how-it-works, ad analyst) | `VOICE_RULES` or `BRAND` in [`brand/atlasair.ts`](../src/mastra/brand/atlasair.ts), or `safetyBlock()` in `prompt-blocks.ts`. They reach the agents through `agentPreamble()` |
+| Ad creative images                                     | The "ABSOLUTE RULES" block at the end of `customize-prompts-step.ts`. It's inline text                                                                                        |
+| Remix images                                           | The "ABSOLUTE CONTENT RULES" in `buildRemixPrompt()` in `plan-remix-tasks-step.ts`. Also inline                                                                               |
+| How-it-works images                                    | The "HARD PROHIBITIONS" in `generate-how-it-works-image-step.ts`                                                                                                              |
+| Palette, fonts, shape                                  | `BRAND.palette` / `typography` / `shape`. A **new** field must also be added to `visualIdentityBlock()` in [`brand/prompt-blocks.ts`](../src/mastra/brand/prompt-blocks.ts)   |
+| Which ad templates the AI picks                        | The selection criteria in [`agents/product-analyzer-agent.ts`](../src/mastra/agents/product-analyzer-agent.ts)                                                                |
+| How a remix rewrites each element                      | [`brand/remix-policy.ts`](../src/mastra/brand/remix-policy.ts) (see below)                                                                                                    |
 
-Rules that matter should be enforced **in code** wherever possible: filter, drop or throw. Prompt-only
-rules are the ones that leak (see [Brand and policy](brand-and-policy.md#enforced-in-code-vs-prompt-only)).
+Every rule here is a prompt instruction, so check the output when you change one. See
+[Brand and policy](brand-and-policy.md#safety-rules).
 
 ## Add a remix element classification
 

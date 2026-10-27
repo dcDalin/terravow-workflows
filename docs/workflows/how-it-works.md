@@ -51,7 +51,7 @@ flowchart LR
 3. **`.foreach(generate-how-it-works-image, { concurrency: 3 })`** ([step](../../src/mastra/workflows/generate-how-it-works/steps/generate-how-it-works-image-step.ts)).
    For each step:
    - **Build the prompt.** It holds the visual theme, the brand `visualIdentityBlock()`, hard
-     prohibitions (no distress, no blood, no invented text or badges), and exact text overlays: label
+     prohibitions (no distress, no blood, no text beyond the overlays), and exact text overlays: label
      at the top, title centre-top, description at the bottom.
    - **Call `generateImageGeminiTool`** with no reference images.
    - **Save the result:** write it locally, or upload it to Supabase. In Supabase mode the item's

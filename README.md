@@ -28,7 +28,7 @@ the one setup trap: the Supabase bucket must exist and be public.
 | [`generate-faqs`](docs/workflows/faqs.md)                 | Product-specific FAQ set, saved as a `.txt` file                                                                 |
 | [`generate-how-it-works`](docs/workflows/how-it-works.md) | The step-by-step illustration series showing how a product is used                                               |
 | [`generate-ad-creatives`](docs/workflows/ad-creatives.md) | Ad creatives from a [40-template catalogue](docs/ad-template-catalogue.md), with AI or manual template selection |
-| [`remix-creative`](docs/workflows/remix-creative.md)      | Rebuilds another brand's ad _layout_ as an AtlasAir creative, stripping their claims                             |
+| [`remix-creative`](docs/workflows/remix-creative.md)      | Rebuilds another brand's ad _layout_ as an AtlasAir creative, rewriting their copy and claims as AtlasAir's      |
 
 Every workflow accepts a `productKey`, so you don't retype product details:
 
@@ -47,28 +47,21 @@ For anything outside the catalogue, pass `productTitle` + `productDescription` i
 also overrides a preset when both are given. [Running workflows](docs/running-workflows.md) has a
 recipe for each workflow.
 
-## The honesty policy
+## Safety rules
 
-AtlasAir competes on being trustworthy:
+There are no content gates. Every ad template can run, and the image model fills any slot a run
+doesn't supply, such as ratings, reviews and stats. Pass `socialProof` to use real Judge.me figures
+instead.
 
-- **Nothing is invented to fill a layout.** That means no statistics, ratings, reviews, testimonials,
-  certifications or press mentions.
-- **No manufactured urgency.**
-- **Social proof comes from real Judge.me data only.**
-- **Deceptive ad templates are blocked.**
-- **Every surface carries the safety framing.** These are airway-clearance aids, not a substitute
-  for medical care.
+These safety rules apply everywhere:
 
-For the image workflows, the key rules are **enforced in code**:
+- **Emergency services come first.** "How it works" always starts with the call.
+- **The disclaimer is always there.** These are airway-clearance aids, not a substitute for medical
+  care.
+- **No guaranteed medical outcome.** Copy says "helps dislodge a blockage".
+- **No distress.** Images never show a child in distress.
 
-- [`brand/template-policy.ts`](src/mastra/brand/template-policy.ts) blocks deceptive templates and
-  gates review templates on real data.
-- [`brand/remix-policy.ts`](src/mastra/brand/remix-policy.ts) strips competitors' stats, badges,
-  reviews and urgency.
-
-For the text workflows (copy, FAQs, how-it-works), the rules are **prompt instructions**, so review
-the output before publishing. [Brand and policy](docs/brand-and-policy.md) lists exactly which rules
-are which.
+[Brand and policy](docs/brand-and-policy.md) covers where each rule lives.
 
 ## Where outputs go
 
@@ -81,16 +74,16 @@ are which.
 
 ## Project structure
 
-| Path                   | Description                                                                     |
-| ---------------------- | ------------------------------------------------------------------------------- |
-| `src/mastra/brand`     | Brand voice, product catalogue, shared prompt blocks, template and remix policy |
-| `src/mastra/agents`    | The content-generation agents                                                   |
-| `src/mastra/workflows` | Multi-step workflows, one directory each with its steps                         |
-| `src/mastra/tools`     | Image generation, file writing, Supabase upload, template lookup                |
-| `src/mastra/schemas`   | Zod input/output schemas per workflow                                           |
-| `src/mastra/utils`     | Supabase client + the 40-template prompt catalogue                              |
-| `src/mastra/index.ts`  | Where agents, workflows and tools are registered                                |
-| `docs/`                | Team documentation                                                              |
+| Path                   | Description                                                                |
+| ---------------------- | -------------------------------------------------------------------------- |
+| `src/mastra/brand`     | Brand voice, product catalogue, shared prompt blocks, remix element policy |
+| `src/mastra/agents`    | The content-generation agents                                              |
+| `src/mastra/workflows` | Multi-step workflows, one directory each with its steps                    |
+| `src/mastra/tools`     | Image generation, file writing, Supabase upload, template lookup           |
+| `src/mastra/schemas`   | Zod input/output schemas per workflow                                      |
+| `src/mastra/utils`     | Supabase client + the 40-template prompt catalogue                         |
+| `src/mastra/index.ts`  | Where agents, workflows and tools are registered                           |
+| `docs/`                | Team documentation                                                         |
 
 [Architecture](docs/architecture.md) explains how it fits together, and [Extending](docs/extending.md)
 covers adding products, templates, rules and workflows.

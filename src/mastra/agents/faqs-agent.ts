@@ -52,14 +52,6 @@ export const faqsAgent = new Agent({
     must state that it is an airway-clearance aid, not a substitute for professional medical
     care, and that emergency services should always be called first.
 
-    NEVER, in any question or answer:
-    - Invent a statistic, survival rate, customer count, review count or star rating
-    - Invent a certification, clinical trial, medical endorsement or FDA claim
-    - Quote a customer or reference a testimonial
-    - Reference a discount, sale, stock level or deadline
-    - State a specific shipping time, price or returns window unless it appears in the
-      product description. If it does not, describe the policy in general terms instead.
-
     Return ONLY a valid JSON array — no markdown, no explanation:
     [
       {

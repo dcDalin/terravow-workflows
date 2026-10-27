@@ -2,9 +2,9 @@ import { homedir } from "os";
 import { join } from "path";
 
 /**
- * AtlasAir brand constants — the single source of truth for voice, safety rules,
- * and honesty policy. Agents and workflow steps import from here rather than
- * restating the brand inline, so a change lands everywhere at once.
+ * AtlasAir brand constants — the single source of truth for voice and safety
+ * rules. Agents and workflow steps import from here rather than restating the
+ * brand inline, so a change lands everywhere at once.
  */
 export const BRAND = {
   name: "AtlasAir",
@@ -31,22 +31,6 @@ export const BRAND = {
   /** Step one of every "how it works" sequence, without exception. */
   emergencyFirstRule:
     "Call emergency services first. The device is used while help is on the way, never instead of calling.",
-
-  /**
-   * Social proof comes from one real place. Anything else is fabrication.
-   * Ratings and quotes are supplied per-run as workflow input, never invented.
-   */
-  socialProofPolicy: {
-    source: "Judge.me",
-    rule: "Only the real Judge.me rating, review count and verbatim review text may be used. If none is supplied on the workflow input, the asset is produced without any social-proof element.",
-  },
-
-  /**
-   * The trust strip carries product facts and store policy only — no badges,
-   * no certifications the brand has not actually earned.
-   */
-  trustStrip:
-    "Product facts and store policy only. No certification badges, no awards, no press logos.",
 
   /**
    * The AtlasAir palette. A workflow run may override primary/secondary/accent
@@ -116,19 +100,4 @@ export const VOICE_RULES = [
   "Second person. The reader is a parent, grandparent, babysitter or carer — any adult who might be the only one in the room.",
   "Never guarantee a medical outcome. Say 'helps dislodge a blockage', never 'clears the blockage' or 'saves your child'.",
   "Preparedness, not fear. The emotional payoff is 'it is in the drawer and I know how to use it', not 'imagine if you did nothing'.",
-] as const;
-
-/**
- * The never-list. These are the tactics the brand deliberately refuses, and
- * they are enforced in code as well as in prompts (see brand/template-policy.ts
- * and the ad-creative customization step).
- */
-export const HONESTY_RULES = [
-  "Never invent a statistic, survival rate, customer count, review count or star rating.",
-  "Never invent a review, testimonial, quote, customer name or reviewer photo.",
-  "Never invent a certification, medical endorsement, clinical trial, award or press mention.",
-  "Never create urgency that does not exist: no countdown timers, no 'only N left', no 'sale ends tonight', no fake scarcity.",
-  "Never imply the product is medically approved, FDA-cleared or clinically proven unless that exact claim is supplied as verified input.",
-  "Never present the device as a replacement for emergency services or trained medical care.",
-  "If a value is not supplied, omit the element entirely. An asset with fewer elements is correct; an asset with invented ones is not.",
 ] as const;

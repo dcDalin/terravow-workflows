@@ -51,22 +51,20 @@ const remixCreativeWorkflow = createWorkflow({
     • Their logo or wordmark, anywhere — in the layout, on the device, on the case, in small
       print, or in reflections
     • Their headline or body copy, brand colours or typefaces
-    • Their statistics, reviews, testimonials, certification badges or urgency devices
+    • Their wording verbatim — statistics, reviews, badges and offers are rewritten as
+      AtlasAir's own
 
-    ⚖️ THE POLICY PASS — the reason this is a workflow and not one prompt:
-    Competitor ads in this category are dense with lives-saved counters, testimonials and
-    medical badges. A naive "swap the logo" remix inherits all of it. So a vision agent
-    transcribes and classifies every text element, then CODE decides what happens to each one
-    (src/mastra/brand/remix-policy.ts) — statistics, badges, urgency and competitor
-    comparisons are always dropped; social proof only survives if you supply real Judge.me
-    data, and even then it is replaced with AtlasAir's own figures, never carried over.
-    Every dropped element is listed in "droppedElements" and in the manifest, with a reason.
+    ⚖️ THE ELEMENT PASS:
+    A vision agent transcribes and classifies every text element, then code decides what
+    happens to each one (src/mastra/brand/remix-policy.ts): generic labels are kept, and
+    everything else is rewritten for AtlasAir. Supply "socialProof" to use real Judge.me
+    figures in social-proof slots. The plan for every element is in the manifest.
 
     📝 WORKFLOW STEPS:
     1. Analyze Sources — vision agent reads each source's layout, text and structure
-    2. Plan Remixes — policy applied deterministically; remix prompts built
+    2. Plan Remixes — each element kept or rewritten deterministically; remix prompts built
     3. Generate Remixes — each rendered in parallel (concurrency: 3)
-    4. Save — images plus a manifest recording exactly what was stripped
+    4. Save — images plus a manifest recording the plan for every element
   `,
   inputSchema: generateRemixInputSchema,
   outputSchema: remixWorkflowOutputSchema,
@@ -78,7 +76,7 @@ const remixCreativeWorkflow = createWorkflow({
   // Step 1: Vision analysis of each source creative
   .then(analyzeSourceCreativesStep)
 
-  // Step 2: Apply remix policy and build prompts (deterministic, no LLM)
+  // Step 2: Plan each element and build prompts (deterministic, no LLM)
   .then(planRemixTasksStep)
 
   // Map: Enrich each task with storage/generation config for foreach

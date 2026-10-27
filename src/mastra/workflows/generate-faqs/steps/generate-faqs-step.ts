@@ -45,7 +45,6 @@ Requirements:
 - One FAQ must state plainly that this is an airway-clearance aid, not a substitute for professional medical care, and that emergency services should be called first
 - Answers are 2–4 sentences, plain language, accurate
 - Write in second person
-- Invent nothing: no statistics, ratings, review counts, certifications or testimonials
 
 Return ONLY a valid JSON array:
 [

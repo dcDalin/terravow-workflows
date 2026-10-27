@@ -31,7 +31,6 @@ const generateFaqsWorkflow = createWorkflow({
     • One FAQ always states that this is an airway-clearance aid, not a substitute for
       professional medical care, and that emergency services come first
     • The digital course gets access/lifetime/certificate questions and no shipping questions
-    • No invented statistics, ratings, review counts, certifications or testimonials
 
     📝 OUTPUT:
     An array of { question, answer } objects saved as a .txt file at:
